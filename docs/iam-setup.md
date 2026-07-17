@@ -1,6 +1,57 @@
 # IAM Setup Guide
 
-Step-by-step instructions to create the service account and assign the required roles.
+Step-by-step instructions to create the service account, enable the required GCP APIs, and assign the required roles.
+
+> **See also:** [docs/apis.md](apis.md) — complete reference of every GCP API the scanner uses, which checks depend on each one, and what happens when an API is disabled.
+
+---
+
+## 0. Enable Required GCP APIs
+
+Before running the scanner, the required GCP APIs must be enabled. Use the helper script:
+
+```bash
+# Enable all APIs — org-level (scanner project) + project-level (all projects in org)
+bash scripts/enable_apis.sh \
+  --org YOUR_ORG_ID \
+  --scanner-project YOUR_SCANNER_PROJECT
+
+# Dry-run first to see what would be enabled
+bash scripts/enable_apis.sh \
+  --org YOUR_ORG_ID \
+  --scanner-project YOUR_SCANNER_PROJECT \
+  --dry-run
+```
+
+Or enable manually:
+
+**Scanner project** (org-level APIs — enable once):
+```bash
+gcloud services enable \
+  cloudasset.googleapis.com \
+  cloudbilling.googleapis.com \
+  billingbudgets.googleapis.com \
+  orgpolicy.googleapis.com \
+  --project=YOUR_SCANNER_PROJECT
+```
+
+**Each scanned project** (project-level APIs):
+```bash
+gcloud services enable \
+  serviceusage.googleapis.com \
+  iam.googleapis.com \
+  compute.googleapis.com \
+  container.googleapis.com \
+  run.googleapis.com \
+  aiplatform.googleapis.com \
+  apikeys.googleapis.com \
+  recommender.googleapis.com \
+  --project=PROJECT_ID
+```
+
+> **Note:** If a project-level API is not enabled, the scanner skips that resource type for that project silently. No findings are generated for skipped resource types. Use `--verbose` to see which APIs were skipped.
+
+---
 
 ## 1. Create the Service Account
 

@@ -102,6 +102,55 @@ gcp-abuse-scanner scan --org 123456789012 --dry-run
 
 ---
 
+## Prerequisites — GCP APIs
+
+The scanner calls GCP APIs to collect resource inventory. **These APIs must be enabled before running a scan.**
+
+### Quick setup (recommended)
+
+```bash
+# Clone the repo to get the script, then run:
+bash scripts/enable_apis.sh \
+  --org YOUR_ORG_ID \
+  --scanner-project YOUR_SCANNER_PROJECT
+
+# Dry-run first to preview changes:
+bash scripts/enable_apis.sh \
+  --org YOUR_ORG_ID \
+  --scanner-project YOUR_SCANNER_PROJECT \
+  --dry-run
+```
+
+### Manual setup
+
+**In the scanner project** (enable once):
+```bash
+gcloud services enable \
+  cloudasset.googleapis.com \
+  cloudbilling.googleapis.com \
+  billingbudgets.googleapis.com \
+  orgpolicy.googleapis.com \
+  --project=YOUR_SCANNER_PROJECT
+```
+
+**In each scanned project**:
+```bash
+gcloud services enable \
+  serviceusage.googleapis.com \
+  iam.googleapis.com \
+  compute.googleapis.com \
+  container.googleapis.com \
+  run.googleapis.com \
+  aiplatform.googleapis.com \
+  apikeys.googleapis.com \
+  recommender.googleapis.com \
+  --project=PROJECT_ID
+```
+
+> **What happens if an API is disabled?** The scanner skips that resource type for that project — it does not fail the scan. Use `--verbose` to see which APIs were skipped. See [docs/apis.md](docs/apis.md) for the full dependency map.
+
+---
+
 ## Required IAM Roles
 
 The service account running this tool needs the following **read-only** roles, assigned at the **organization level** (for org-wide scans) or project level:
@@ -121,7 +170,7 @@ The service account running this tool needs the following **read-only** roles, a
 | `roles/orgpolicy.policyViewer` | Read Organization Policy constraints |
 | `roles/monitoring.viewer` | *(Optional)* Verify alerting policies |
 
-See [docs/iam-setup.md](docs/iam-setup.md) for step-by-step setup instructions.
+See [docs/iam-setup.md](docs/iam-setup.md) for step-by-step setup instructions and [docs/apis.md](docs/apis.md) for the complete API reference.
 
 ---
 
