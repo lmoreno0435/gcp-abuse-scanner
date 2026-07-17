@@ -66,7 +66,8 @@ class GEM001NoAPIRestrictions(BaseCheck):
     vector = Vector.GEMINI_ABUSE
     severity_base = Severity.CRITICAL
     required_collectors = ["api_keys"]
-    required_apis = ["apikeys.googleapis.com"]
+    # NOTE: required_apis intentionally omitted — API keys exist independently of whether
+    # apikeys.googleapis.com is listed as enabled. The collector always attempts collection.
     references = ["CIS GCP 1.14"]
     tags = ["api_keys", "gemini_abuse", "credentials"]
 
@@ -148,7 +149,6 @@ class GEM002NoAppRestrictions(BaseCheck):
     vector = Vector.GEMINI_ABUSE
     severity_base = Severity.CRITICAL
     required_collectors = ["api_keys"]
-    required_apis = ["apikeys.googleapis.com"]
     references = ["CIS GCP 1.14"]
     tags = ["api_keys", "gemini_abuse", "credentials"]
 
@@ -227,7 +227,6 @@ class GEM003KeyTargetsGemini(BaseCheck):
     vector = Vector.GEMINI_ABUSE
     severity_base = Severity.HIGH
     required_collectors = ["api_keys"]
-    required_apis = ["apikeys.googleapis.com"]
     tags = ["api_keys", "gemini_abuse"]
 
     def evaluate(self, inventory: ResourceInventory) -> list[Finding]:

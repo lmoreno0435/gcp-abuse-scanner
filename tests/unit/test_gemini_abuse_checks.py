@@ -66,6 +66,36 @@ class TestGEM001NoAPIRestrictions:
         findings = check.evaluate(clean_inventory)
         assert findings == []
 
+    def test_is_applicable_without_apikeys_api_in_enabled_list(self) -> None:
+        """GEM-001 must run even when apikeys.googleapis.com is NOT in enabled_apis.
+
+        API keys exist independently of whether the API Keys API is listed as enabled.
+        Previously, required_apis=["apikeys.googleapis.com"] caused is_applicable() to
+        return False, silently skipping all GEM-001..GEM-004 checks.
+        """
+        from gcp_abuse_scanner.models.inventory import APIKey
+
+        inv = ResourceInventory(project_ids=["proj-x"])
+        # Deliberately no EnabledAPI entries — simulates a project where
+        # apikeys.googleapis.com never appeared in the ServiceUsage response.
+        inv.api_keys.append(
+            APIKey(
+                name="projects/proj-x/locations/global/keys/unrestricted",
+                project_id="proj-x",
+                display_name="Unrestricted Key",
+                restrictions={},
+                uid="uid-unrestricted",
+            )
+        )
+
+        check = GEM001NoAPIRestrictions()
+        assert check.is_applicable(
+            inv
+        ), "GEM-001 must be applicable even without apikeys.googleapis.com in enabled_apis"
+        findings = check.evaluate(inv)
+        assert len(findings) == 1
+        assert findings[0].check_id == "GEM-001"
+
 
 # --- GEM-002 ---
 

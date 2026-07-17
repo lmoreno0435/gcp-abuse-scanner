@@ -35,9 +35,6 @@ class APIKeysCollector(BaseCollector):
             return
 
         for project_id in project_ids:
-            if not self.is_api_enabled(inventory, project_id):
-                inventory.skipped_apis.setdefault(project_id, []).append("apikeys.googleapis.com")
-                continue
             try:
                 request = (
                     apikeys.projects()
@@ -67,4 +64,14 @@ class APIKeysCollector(BaseCollector):
                         )
                     )
             except Exception as exc:
-                logger.warning("API Keys collection failed for %s: %s", project_id, _fmt_exc(exc))
+                fmt = _fmt_exc(exc)
+                # 403/404 usually means the API Keys API is not enabled — not an error worth
+                # surfacing loudly; the checks will simply find nothing for this project.
+                if "HTTP 403" in fmt or "HTTP 404" in fmt:
+                    logger.debug(
+                        "API Keys collection skipped for %s (API not enabled or no permission): %s",
+                        project_id,
+                        fmt,
+                    )
+                else:
+                    logger.warning("API Keys collection failed for %s: %s", project_id, fmt)

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-07-17
+
+### Fixed
+- **API Keys checks (GEM-001 to GEM-004) were silently skipped** in most real projects. Root cause: `required_apis = ["apikeys.googleapis.com"]` caused `is_applicable()` to return `False` when that API was not listed in the ServiceUsage response — even though API keys exist independently of whether the API Keys API is explicitly enabled. Removed `required_apis` from GEM-001, GEM-002, and GEM-003 (GEM-004 was already unaffected).
+- **`APIKeysCollector` was also skipping projects** via the same `is_api_enabled()` guard. The collector now always attempts collection. HTTP 403/404 responses (API not enabled or no permission) are logged at DEBUG level instead of WARNING, keeping logs clean while still collecting keys when accessible.
+- Added 5 new tests covering: collection without `apikeys.googleapis.com` in enabled_apis, collection with it present, 403 is silent, 500 is a warning, and `GEM-001.is_applicable()` returns `True` without the API in enabled_apis.
+
 ## [0.1.1] - 2026-07-17
 
 ### Fixed

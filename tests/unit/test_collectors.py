@@ -497,6 +497,143 @@ class TestQuotaCollector:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# APIKeysCollector
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+class TestAPIKeysCollector:
+    """APIKeysCollector always attempts collection regardless of enabled_apis."""
+
+    def test_collects_keys_without_api_in_enabled_list(self):
+        """Keys are collected even when apikeys.googleapis.com is NOT in enabled_apis."""
+        from gcp_abuse_scanner.collectors.api_keys import APIKeysCollector
+
+        # No apikeys.googleapis.com in enabled_apis — old code would skip entirely
+        inv = ResourceInventory(project_ids=["proj-1"])
+        auth = _make_auth()
+
+        with patch("googleapiclient.discovery.build") as mock_build:
+            mock_client = MagicMock()
+            mock_build.return_value = mock_client
+            mock_client.projects().locations().keys().list().execute.return_value = {
+                "keys": [
+                    {
+                        "name": "projects/proj-1/locations/global/keys/key-abc",
+                        "displayName": "My Key",
+                        "restrictions": {},
+                        "createTime": "2024-01-01T00:00:00Z",
+                        "uid": "abc123",
+                    }
+                ]
+            }
+            mock_client.projects().locations().keys().list_next.return_value = None
+
+            collector = APIKeysCollector(auth)
+            collector.collect(inv, ["proj-1"])
+
+        assert len(inv.api_keys) == 1
+        assert inv.api_keys[0].uid == "abc123"
+
+    def test_collects_keys_with_api_in_enabled_list(self):
+        """Keys are also collected when apikeys.googleapis.com IS in enabled_apis."""
+        from gcp_abuse_scanner.collectors.api_keys import APIKeysCollector
+
+        inv = _inventory_with_apis("apikeys.googleapis.com", project_id="proj-1")
+        auth = _make_auth()
+
+        with patch("googleapiclient.discovery.build") as mock_build:
+            mock_client = MagicMock()
+            mock_build.return_value = mock_client
+            mock_client.projects().locations().keys().list().execute.return_value = {
+                "keys": [
+                    {
+                        "name": "projects/proj-1/locations/global/keys/key-xyz",
+                        "displayName": "Server Key",
+                        "restrictions": {"serverKeyRestrictions": {"allowedIps": ["1.2.3.4"]}},
+                        "createTime": "2025-01-01T00:00:00Z",
+                        "uid": "xyz789",
+                    }
+                ]
+            }
+            mock_client.projects().locations().keys().list_next.return_value = None
+
+            collector = APIKeysCollector(auth)
+            collector.collect(inv, ["proj-1"])
+
+        assert len(inv.api_keys) == 1
+        assert inv.api_keys[0].uid == "xyz789"
+
+    def test_403_is_silent_debug_not_warning(self, caplog):
+        """HTTP 403 from the API Keys API is logged at DEBUG, not WARNING."""
+        import logging
+        from unittest.mock import MagicMock, patch
+
+        from googleapiclient.errors import HttpError
+
+        from gcp_abuse_scanner.collectors.api_keys import APIKeysCollector
+
+        inv = ResourceInventory(project_ids=["proj-1"])
+        auth = _make_auth()
+
+        resp = MagicMock()
+        resp.status = 403
+        resp.reason = "Forbidden"
+        http_err = HttpError(
+            resp=resp,
+            content=b'{"error": {"code": 403, "message": "API Keys API not enabled."}}',
+            uri="https://apikeys.googleapis.com/v2/projects/proj-1/locations/global/keys",
+        )
+
+        with patch("googleapiclient.discovery.build") as mock_build:
+            mock_client = MagicMock()
+            mock_build.return_value = mock_client
+            mock_client.projects().locations().keys().list().execute.side_effect = http_err
+
+            with caplog.at_level(logging.WARNING, logger="gcp_abuse_scanner.collectors.api_keys"):
+                collector = APIKeysCollector(auth)
+                collector.collect(inv, ["proj-1"])
+
+        # No WARNING should be emitted for 403
+        warnings = [r for r in caplog.records if r.levelno >= logging.WARNING]
+        assert len(warnings) == 0
+        assert len(inv.api_keys) == 0
+
+    def test_non_403_error_is_warning(self, caplog):
+        """Unexpected errors (e.g. 500) are still logged as WARNING."""
+        import logging
+        from unittest.mock import MagicMock, patch
+
+        from googleapiclient.errors import HttpError
+
+        from gcp_abuse_scanner.collectors.api_keys import APIKeysCollector
+
+        inv = ResourceInventory(project_ids=["proj-1"])
+        auth = _make_auth()
+
+        resp = MagicMock()
+        resp.status = 500
+        resp.reason = "Internal Server Error"
+        http_err = HttpError(
+            resp=resp,
+            content=b'{"error": {"code": 500, "message": "Backend error."}}',
+            uri="https://apikeys.googleapis.com/v2/projects/proj-1/locations/global/keys",
+        )
+
+        with patch("googleapiclient.discovery.build") as mock_build:
+            mock_client = MagicMock()
+            mock_build.return_value = mock_client
+            mock_client.projects().locations().keys().list().execute.side_effect = http_err
+
+            with caplog.at_level(logging.WARNING, logger="gcp_abuse_scanner.collectors.api_keys"):
+                collector = APIKeysCollector(auth)
+                collector.collect(inv, ["proj-1"])
+
+        warnings = [r for r in caplog.records if r.levelno >= logging.WARNING]
+        assert len(warnings) == 1
+        assert "HTTP 500" in warnings[0].message
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # CollectorEngine integration (smoke test)
 # ─────────────────────────────────────────────────────────────────────────────
 
