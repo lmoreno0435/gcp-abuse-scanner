@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-07-17
+
+### Added
+- `docs/apis.md`: complete reference of all 12 GCP APIs the scanner uses, per-collector breakdown, collector→API→checks dependency map, and minimum/recommended/full coverage tiers.
+- `scripts/enable_apis.sh`: interactive bash script (bash 3.2+ / macOS compatible) to enable all required APIs across an org or explicit project list. Supports `--dry-run`, `--parallel`, `--skip-org-apis`, `--skip-project-apis`.
+
+### Changed
+- `docs/iam-setup.md`: added Step 0 with manual and script-based API setup instructions before IAM role assignment.
+- `README.md`: added Prerequisites section with quick-setup commands and link to `docs/apis.md`.
+
 ## [0.1.3] - 2026-07-17
 
 ### Fixed

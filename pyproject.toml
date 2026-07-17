@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "gcp-abuse-scanner"
-version = "0.1.3"
+version = "0.1.4"
 description = "Preventive GCP security scanner for crypto mining and Gemini API abuse vectors"
 readme = "README.md"
 license = { file = "LICENSE" }
