@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-07-17
+
+### Fixed
+- **CM-002 crash on real org scans**: `_org_policy_is_restricted()` called `.upper()` on `denyAll`/`allowAll` fields that the Org Policy REST v2 API returns as native Python booleans, not strings. Fixed to handle both `bool` and `str` representations.
+
 ## [0.1.2] - 2026-07-17
 
 ### Fixed

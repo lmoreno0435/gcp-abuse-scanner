@@ -57,11 +57,17 @@ def _org_policy_is_restricted(policy: OrgPolicy) -> bool:
     if not rules:
         return False
     for rule in rules:
-        # denyAll: "TRUE" means all values are denied → restrictive
-        if rule.get("denyAll", "").upper() == "TRUE":
+        # denyAll / allowAll can be a bool (REST v2) or string "TRUE" (REST v1)
+        def _is_true(val: object) -> bool:
+            if isinstance(val, bool):
+                return val
+            return str(val).upper() == "TRUE"
+
+        # denyAll: True means all values are denied → restrictive
+        if _is_true(rule.get("denyAll", False)):
             return True
-        # allowAll: "TRUE" means everything is allowed → NOT restrictive
-        if rule.get("allowAll", "").upper() == "TRUE":
+        # allowAll: True means everything is allowed → NOT restrictive
+        if _is_true(rule.get("allowAll", False)):
             return False
         # An explicit allowList with no values (empty) means deny all → restrictive
         values = rule.get("values", {})
