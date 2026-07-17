@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GCP Abuse Scanner — Security Report</title>
+  <style>
+    /* ── Reset & base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f8fafc;
+      --surface:   #ffffff;
+      --border:    #e2e8f0;
+      --text:      #0f172a;
+      --text-muted:#64748b;
+      --radius:    8px;
+      --shadow:    0 1px 3px rgba(0,0,0,0.10), 0 1px 2px rgba(0,0,0,0.06);
+
+      --critical:  #dc2626;
+      --high:      #ea580c;
+      --medium:    #ca8a04;
+      --low:       #2563eb;
+      --info:      #6b7280;
+      --pass:      #16a34a;
+      --score-good:#16a34a;
+      --score-mid: #ca8a04;
+      --score-bad: #dc2626;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Layout ───────────────────────────────────────────────── */
+    .page { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; }
+
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    h1 { font-size: 24px; font-weight: 700; }
+    h2 { font-size: 18px; font-weight: 700; margin-bottom: 16px; color: var(--text); }
+    h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+
+    /* ── Header ───────────────────────────────────────────────── */
+    .header-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .header-meta { flex: 1; min-width: 260px; }
+    .header-meta h1 { margin-bottom: 8px; }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 2px 12px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .meta-grid .label { font-weight: 600; color: var(--text); white-space: nowrap; }
+    .meta-grid code {
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+      background: var(--bg);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+
+    /* ── Posture score circle ─────────────────────────────────── */
+    .score-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .score-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* ── Executive summary cards ──────────────────────────────── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+    }
+
+    .sev-card {
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+    .sev-card .sev-count { font-size: 32px; font-weight: 800; line-height: 1; }
+    .sev-card .sev-name  { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+
+    /* ── Coverage table ───────────────────────────────────────── */
+    .stat-row { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 16px; }
+    .stat-item { text-align: center; }
+    .stat-item .stat-num { font-size: 28px; font-weight: 700; }
+    .stat-item .stat-lbl { font-size: 12px; color: var(--text-muted); }
+
+    /* ── Tables ───────────────────────────────────────────────── */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      text-align: left;
+      padding: 8px 12px;
+      background: var(--bg);
+      border-bottom: 2px solid var(--border);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) td { background: #f8fafc; }
+    tr:hover td { background: #f1f5f9; }
+
+    /* ── Severity badges ──────────────────────────────────────── */
+    .badge {
+      display: inline-block;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-CRITICAL { color: var(--critical); background: #fef2f2; border: 1px solid #fecaca; }
+    .badge-HIGH     { color: var(--high);     background: #fff7ed; border: 1px solid #fed7aa; }
+    .badge-MEDIUM   { color: var(--medium);   background: #fefce8; border: 1px solid #fde68a; }
+    .badge-LOW      { color: var(--low);      background: #eff6ff; border: 1px solid #bfdbfe; }
+    .badge-INFO     { color: var(--info);     background: #f9fafb; border: 1px solid #e5e7eb; }
+    .badge-PASS     { color: var(--pass);     background: #f0fdf4; border: 1px solid #bbf7d0; }
+    .badge-FAIL     { color: var(--critical); background: #fef2f2; border: 1px solid #fecaca; }
+    .badge-SKIPPED  { color: var(--info);     background: #f9fafb; border: 1px solid #e5e7eb; }
+    .badge-ERROR    { color: var(--high);     background: #fff7ed; border: 1px solid #fed7aa; }
+    .badge-NOT_APPLICABLE { color: var(--info); background: #f9fafb; border: 1px solid #e5e7eb; }
+
+    /* ── Findings sections (collapsible) ──────────────────────── */
+    details { margin-bottom: 16px; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    details[open] summary { border-bottom: 1px solid var(--border); }
+
+    summary {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      cursor: pointer;
+      background: var(--surface);
+      font-weight: 600;
+      font-size: 15px;
+      list-style: none;
+      user-select: none;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary::before {
+      content: "▶";
+      font-size: 11px;
+      color: var(--text-muted);
+      transition: transform 0.15s;
+      flex-shrink: 0;
+    }
+    details[open] summary::before { transform: rotate(90deg); }
+
+    .summary-count {
+      margin-left: auto;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2px 10px;
+    }
+
+    .details-body { padding: 0; }
+
+    /* ── Remediation plan ─────────────────────────────────────── */
+    .remediation-item {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .remediation-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .remediation-rank {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-muted);
+      min-width: 28px;
+    }
+    .remediation-title { font-weight: 700; font-size: 15px; flex: 1; }
+    .remediation-body { padding: 16px 18px; }
+    .remediation-body p { margin-bottom: 8px; }
+    .remediation-body strong { font-weight: 600; }
+
+    .steps-list { margin: 8px 0 12px 20px; }
+    .steps-list li { margin-bottom: 4px; }
+
+    pre {
+      background: #1e293b;
+      color: #e2e8f0;
+      border-radius: 6px;
+      padding: 14px 16px;
+      overflow-x: auto;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      margin: 8px 0 12px;
+    }
+    pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+
+    code {
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+      background: var(--bg);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+
+    .docs-list { list-style: none; margin: 4px 0; }
+    .docs-list li::before { content: "↗ "; color: #2563eb; }
+
+    /* ── Appendix ─────────────────────────────────────────────── */
+    .appendix-table td:first-child { font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; }
+
+    /* ── Empty state ──────────────────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+    .empty-state .icon { font-size: 40px; margin-bottom: 8px; }
+
+    /* ── Footer ───────────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 32px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Responsive ───────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .header-card { flex-direction: column; }
+      .stat-row { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  {# ── 1. HEADER ──────────────────────────────────────────────── #}
+  {% set meta = report.metadata %}
+  {% set summary = report.executive_summary %}
+  {% set cov = report.coverage %}
+  {% set score = summary.posture_score | round(1) %}
+  {% if score >= 80 %}
+    {% set score_color = "#16a34a" %}
+  {% elif score >= 50 %}
+    {% set score_color = "#ca8a04" %}
+  {% else %}
+    {% set score_color = "#dc2626" %}
+  {% endif %}
+
+  <div class="card header-card">
+    <div class="header-meta">
+      <h1>🛡️ GCP Abuse Scanner</h1>
+      <p style="color:var(--text-muted);margin-bottom:14px;font-size:13px;">Security Report</p>
+      <div class="meta-grid">
+        <span class="label">Scan ID</span>   <span><code>{{ meta.scan_id }}</code></span>
+        <span class="label">Version</span>   <span>v{{ meta.tool_version }}</span>
+        <span class="label">Scope</span>
+        <span>
+          {{ meta.scope_type }}
+          {% if meta.organization_id %}
+            — org <code>{{ meta.organization_id }}</code>
+          {% elif meta.project_ids %}
+            — {% for p in meta.project_ids[:5] %}<code>{{ p }}</code>{% if not loop.last %}, {% endif %}{% endfor %}
+            {% if meta.project_ids | length > 5 %} &hellip;+{{ meta.project_ids | length - 5 }} more{% endif %}
+          {% endif %}
+        </span>
+        <span class="label">Identity</span> <span><code>{{ meta.service_account or "ADC" }}</code></span>
+        <span class="label">Started</span>  <span>{{ meta.started_at.strftime("%Y-%m-%d %H:%M UTC") if meta.started_at else "—" }}</span>
+        {% if meta.duration_seconds %}
+        <span class="label">Duration</span> <span>{{ "%.1f"|format(meta.duration_seconds) }}s</span>
+        {% endif %}
+        {% if meta.vectors_scanned %}
+        <span class="label">Vectors</span>  <span>{{ meta.vectors_scanned | join(", ") }}</span>
+        {% endif %}
+      </div>
+    </div>
+
+    {# Posture score SVG circle #}
+    <div class="score-wrap">
+      <svg width="110" height="110" viewBox="0 0 110 110" aria-label="Posture score {{ score }}">
+        <circle cx="55" cy="55" r="48" fill="none" stroke="#e2e8f0" stroke-width="10"/>
+        <circle cx="55" cy="55" r="48" fill="none"
+                stroke="{{ score_color }}" stroke-width="10"
+                stroke-dasharray="{{ (score / 100 * 301.59) | round(2) }} 301.59"
+                stroke-dashoffset="75.4"
+                stroke-linecap="round"
+                transform="rotate(-90 55 55)"/>
+        <text x="55" y="50" text-anchor="middle" dominant-baseline="middle"
+              font-family="system-ui, sans-serif" font-size="22" font-weight="800"
+              fill="{{ score_color }}">{{ score | int }}</text>
+        <text x="55" y="70" text-anchor="middle" dominant-baseline="middle"
+              font-family="system-ui, sans-serif" font-size="11" fill="#64748b">/100</text>
+      </svg>
+      <span class="score-label">Posture Score</span>
+    </div>
+  </div>
+
+  {# ── 2. EXECUTIVE SUMMARY ───────────────────────────────────── #}
+  <div class="card">
+    <h2>Executive Summary</h2>
+    <div class="summary-grid">
+      <div class="sev-card" style="border-color:#fecaca;">
+        <div class="sev-count" style="color:#dc2626;">{{ summary.by_severity.critical }}</div>
+        <div class="sev-name"  style="color:#dc2626;">Critical</div>
+      </div>
+      <div class="sev-card" style="border-color:#fed7aa;">
+        <div class="sev-count" style="color:#ea580c;">{{ summary.by_severity.high }}</div>
+        <div class="sev-name"  style="color:#ea580c;">High</div>
+      </div>
+      <div class="sev-card" style="border-color:#fde68a;">
+        <div class="sev-count" style="color:#ca8a04;">{{ summary.by_severity.medium }}</div>
+        <div class="sev-name"  style="color:#ca8a04;">Medium</div>
+      </div>
+      <div class="sev-card" style="border-color:#bfdbfe;">
+        <div class="sev-count" style="color:#2563eb;">{{ summary.by_severity.low }}</div>
+        <div class="sev-name"  style="color:#2563eb;">Low</div>
+      </div>
+      <div class="sev-card" style="border-color:#e5e7eb;">
+        <div class="sev-count" style="color:#6b7280;">{{ summary.by_severity.info }}</div>
+        <div class="sev-name"  style="color:#6b7280;">Info</div>
+      </div>
+      <div class="sev-card" style="border-color:#e2e8f0;background:#f8fafc;">
+        <div class="sev-count" style="color:#0f172a;">{{ summary.total_findings }}</div>
+        <div class="sev-name"  style="color:#64748b;">Total</div>
+      </div>
+    </div>
+
+    {% if summary.by_vector %}
+    <div style="margin-top:20px;">
+      <h3>By Vector</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Vector</th>
+            <th>Findings</th>
+            <th>Critical</th>
+            <th>High</th>
+            <th>Medium</th>
+            <th>Low</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for vs in summary.by_vector %}
+          <tr>
+            <td>{{ vs.vector | vector_label }}</td>
+            <td><strong>{{ vs.findings_count }}</strong></td>
+            <td style="color:#dc2626;font-weight:600;">{{ vs.by_severity.critical }}</td>
+            <td style="color:#ea580c;font-weight:600;">{{ vs.by_severity.high }}</td>
+            <td style="color:#ca8a04;font-weight:600;">{{ vs.by_severity.medium }}</td>
+            <td style="color:#2563eb;font-weight:600;">{{ vs.by_severity.low }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+
+  {# ── 3. COVERAGE ────────────────────────────────────────────── #}
+  <div class="card">
+    <h2>Coverage</h2>
+    <div class="stat-row">
+      <div class="stat-item">
+        <div class="stat-num">{{ cov.projects_scanned }}</div>
+        <div class="stat-lbl">Projects Scanned</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" style="{% if cov.projects_inaccessible > 0 %}color:#dc2626{% endif %}">{{ cov.projects_inaccessible }}</div>
+        <div class="stat-lbl">Inaccessible</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">{{ cov.checks_executed }}</div>
+        <div class="stat-lbl">Checks Executed</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" style="color:#16a34a;">{{ cov.checks_passed }}</div>
+        <div class="stat-lbl">Passed</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" style="{% if cov.checks_failed > 0 %}color:#dc2626{% endif %}">{{ cov.checks_failed }}</div>
+        <div class="stat-lbl">Failed</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" style="color:#6b7280;">{{ cov.checks_skipped }}</div>
+        <div class="stat-lbl">Skipped</div>
+      </div>
+    </div>
+
+    {% if cov.inaccessible_project_ids %}
+    <div style="margin-top:12px;">
+      <h3 style="color:#dc2626;">⚠ Inaccessible Projects</h3>
+      <p style="color:var(--text-muted);margin-bottom:8px;font-size:13px;">
+        The scanner could not access the following projects. Check service account permissions.
+      </p>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        {% for pid in cov.inaccessible_project_ids %}
+        <code style="background:#fef2f2;border:1px solid #fecaca;color:#dc2626;">{{ pid }}</code>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if cov.skipped_apis_by_project %}
+    <div style="margin-top:16px;">
+      <h3>Skipped APIs by Project</h3>
+      <table>
+        <thead>
+          <tr><th>Project</th><th>Skipped APIs</th></tr>
+        </thead>
+        <tbody>
+          {% for project_id, apis in cov.skipped_apis_by_project.items() %}
+          <tr>
+            <td><code>{{ project_id }}</code></td>
+            <td>{{ apis | join(", ") }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    {% if cov.collector_errors %}
+    <div style="margin-top:16px;">
+      <h3 style="color:#ea580c;">Collector Errors</h3>
+      <table>
+        <thead>
+          <tr><th>Collector</th><th>Error</th></tr>
+        </thead>
+        <tbody>
+          {% for err in cov.collector_errors %}
+          <tr>
+            <td><code>{{ err.get("collector", "—") }}</code></td>
+            <td style="color:#ea580c;">{{ err.get("error", "—") }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+
+  {# ── 4. FINDINGS BY VECTOR ──────────────────────────────────── #}
+  <div class="card">
+    <h2>Findings by Vector</h2>
+
+    {% set all_findings = report.findings | selectattr("suppressed", "equalto", false) | list %}
+
+    {% if not all_findings %}
+    <div class="empty-state">
+      <div class="icon">✅</div>
+      <div>No findings — great posture!</div>
+    </div>
+    {% else %}
+
+    {% for vector_slug, vector_icon_label in [
+        ("crypto_mining", "⛏ Crypto Mining"),
+        ("gemini_abuse",  "🤖 Gemini Abuse"),
+        ("common",        "🔧 Common")
+    ] %}
+    {% set vfindings = report.findings_by_vector(vector_slug) %}
+    {% if vfindings %}
+    <details open>
+      <summary>
+        {{ vector_icon_label }}
+        <span class="summary-count">{{ vfindings | length }} finding{{ "s" if vfindings | length != 1 }}</span>
+      </summary>
+      <div class="details-body">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:40px;">#</th>
+              <th style="width:100px;">Check ID</th>
+              <th style="width:110px;">Severity</th>
+              <th>Resource</th>
+              <th>Description</th>
+              <th style="width:80px;">Effort</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for f in vfindings | sort(attribute="priority_rank") %}
+            <tr>
+              <td style="color:var(--text-muted);font-weight:600;">{{ f.priority_rank or "—" }}</td>
+              <td><code>{{ f.check_id }}</code></td>
+              <td><span class="badge badge-{{ f.severity.value }}">{{ f.severity.value }}</span></td>
+              <td>
+                <div style="font-size:12px;color:var(--text-muted);">{{ f.resource.project_id }}</div>
+                <div style="font-size:12px;word-break:break-all;">{{ f.resource.resource_id }}</div>
+              </td>
+              <td>
+                <div style="font-weight:600;margin-bottom:2px;">{{ f.title }}</div>
+                <div style="color:var(--text-muted);font-size:12px;">{{ f.description | truncate(120) }}</div>
+              </td>
+              <td>
+                <span class="badge badge-{{ f.remediation.effort.value }}">{{ f.remediation.effort.value }}</span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </details>
+    {% endif %}
+    {% endfor %}
+
+    {% endif %}
+  </div>
+
+  {# ── 5. REMEDIATION PLAN ────────────────────────────────────── #}
+  <div class="card">
+    <h2>Remediation Plan</h2>
+    {% set prioritized = report.prioritized_findings() %}
+
+    {% if not prioritized %}
+    <div class="empty-state">
+      <div class="icon">🎉</div>
+      <div>No active findings — nothing to remediate!</div>
+    </div>
+    {% else %}
+
+    {% for f in prioritized %}
+    <div class="remediation-item">
+      <div class="remediation-header">
+        <span class="remediation-rank">#{{ f.priority_rank or loop.index }}</span>
+        <span class="remediation-title">{{ f.title }}</span>
+        <span class="badge badge-{{ f.severity.value }}">{{ f.severity.value }}</span>
+        <span style="font-size:12px;color:var(--text-muted);">{{ f.vector.value | vector_label }}</span>
+        <code style="font-size:11px;margin-left:auto;">{{ f.check_id }}</code>
+      </div>
+      <div class="remediation-body">
+        <p><strong>Resource:</strong> <code>{{ f.resource.resource_id }}</code>
+          <span style="color:var(--text-muted);font-size:12px;"> ({{ f.resource.project_id }})</span>
+        </p>
+        <p><strong>Impact:</strong> {{ f.impact }}</p>
+        <p style="margin-top:10px;"><strong>Remediation:</strong> {{ f.remediation.summary }}</p>
+
+        {% if f.remediation.steps %}
+        <ol class="steps-list">
+          {% for step in f.remediation.steps %}
+          <li>{{ step }}</li>
+          {% endfor %}
+        </ol>
+        {% endif %}
+
+        {% if f.remediation.gcloud_commands %}
+        <p><strong>Commands:</strong></p>
+        <pre><code>{{ f.remediation.gcloud_commands | join("\n") }}</code></pre>
+        {% endif %}
+
+        {% if f.remediation.docs %}
+        <p><strong>References:</strong></p>
+        <ul class="docs-list">
+          {% for doc in f.remediation.docs %}
+          <li><a href="{{ doc }}" target="_blank" rel="noopener noreferrer">{{ doc }}</a></li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+
+        {% if f.remediation.iac_reference %}
+        <p style="margin-top:8px;font-size:12px;color:var(--text-muted);">
+          <strong>IaC Reference:</strong> {{ f.remediation.iac_reference }}
+        </p>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+
+    {% endif %}
+  </div>
+
+  {# ── 6. APPENDIX — ALL CHECKS ───────────────────────────────── #}
+  <div class="card">
+    <h2>Appendix — All Checks</h2>
+    {% if not report.findings %}
+    <div class="empty-state">
+      <div class="icon">📋</div>
+      <div>No check results recorded.</div>
+    </div>
+    {% else %}
+
+    {# Group by check_id #}
+    {% set ns = namespace(seen=[]) %}
+    <table class="appendix-table">
+      <thead>
+        <tr>
+          <th>Check ID</th>
+          <th>Vector</th>
+          <th>Title</th>
+          <th>Status</th>
+          <th>Severity</th>
+          <th>Project</th>
+          <th>Suppressed</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in report.findings | sort(attribute="check_id") %}
+        <tr>
+          <td><code>{{ f.check_id }}</code></td>
+          <td>{{ f.vector.value | vector_label }}</td>
+          <td>{{ f.title }}</td>
+          <td><span class="badge badge-{{ f.status.value }}">{{ f.status.value }}</span></td>
+          <td><span class="badge badge-{{ f.severity.value }}">{{ f.severity.value }}</span></td>
+          <td><code style="font-size:11px;">{{ f.resource.project_id }}</code></td>
+          <td style="text-align:center;">
+            {% if f.suppressed %}
+            <span title="{{ f.suppression_reason or '' }}" style="cursor:help;">🔕</span>
+            {% else %}
+            —
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </div>
+
+  {# ── 7. FOOTER ──────────────────────────────────────────────── #}
+  <footer>
+    <p>
+      Generated by <strong>gcp-abuse-scanner</strong> v{{ meta.tool_version }}
+      &nbsp;·&nbsp;
+      {% if meta.finished_at %}
+        {{ meta.finished_at.strftime("%Y-%m-%d %H:%M:%S UTC") }}
+      {% elif meta.started_at %}
+        {{ meta.started_at.strftime("%Y-%m-%d %H:%M:%S UTC") }}
+      {% endif %}
+      &nbsp;·&nbsp;
+      Scan ID: <code>{{ meta.scan_id }}</code>
+    </p>
+  </footer>
+
+</div>
+</body>
+</html>

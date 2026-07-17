@@ -1,0 +1,40 @@
+# gcp-abuse-scanner configuration example
+# Copy to config.yaml and customize
+
+# Allowlist — suppress known false positives or accepted risks
+# Each rule suppresses findings matching ALL specified fields
+allowlist:
+  - check_id: CM-001
+    project_id: my-legacy-project
+    reason: "External IP required for on-prem VPN — reviewed 2024-01-15 by security team"
+
+  - check_id: CM-009
+    resource_id: "instances/bastion-host"
+    reason: "Bastion host — Shielded VM not compatible with this image"
+
+  # Suppress all LOW findings in a specific project
+  # (not recommended for production — use sparingly)
+  # - project_id: dev-sandbox-project
+  #   severity: LOW
+  #   reason: "Dev sandbox — accepted risk"
+
+# Output configuration (can also be set via CLI flags)
+output:
+  format: console   # console | json | markdown | html | all
+  # output_file: report.json
+
+# Scan configuration
+scan:
+  # Limit to specific vectors (default: all)
+  # vectors:
+  #   - crypto_mining
+  #   - gemini_abuse
+  #   - common
+
+  # Exclude specific projects from org-wide scans
+  # exclude_projects:
+  #   - my-excluded-project-1
+  #   - my-excluded-project-2
+
+  # Concurrency settings
+  max_workers: 10

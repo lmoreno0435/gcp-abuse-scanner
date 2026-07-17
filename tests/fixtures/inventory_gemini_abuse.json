@@ -1,0 +1,58 @@
+{
+  "organization_id": "123456789012",
+  "project_ids": ["test-project-002"],
+  "projects": [
+    {
+      "project_id": "test-project-002",
+      "project_number": "555666777888",
+      "display_name": "AI Project",
+      "organization_id": "123456789012",
+      "billing_account_id": "ABCDEF-123456-GHIJKL"
+    }
+  ],
+  "compute_instances": [],
+  "firewall_rules": [],
+  "iam_bindings": [
+    {
+      "resource": "//cloudresourcemanager.googleapis.com/projects/test-project-002",
+      "resource_type": "cloudresourcemanager.googleapis.com/Project",
+      "project_id": "test-project-002",
+      "role": "roles/aiplatform.user",
+      "members": ["domain:example.com", "allAuthenticatedUsers"]
+    }
+  ],
+  "service_accounts": [],
+  "gke_clusters": [],
+  "cloud_run_services": [],
+  "api_keys": [
+    {
+      "name": "projects/test-project-002/locations/global/keys/key-no-restrictions",
+      "project_id": "test-project-002",
+      "display_name": "Frontend Key",
+      "restrictions": {},
+      "create_time": "2024-01-15T10:00:00Z",
+      "uid": "key-uid-001"
+    },
+    {
+      "name": "projects/test-project-002/locations/global/keys/key-gemini-no-app",
+      "project_id": "test-project-002",
+      "display_name": "Gemini Key",
+      "restrictions": {
+        "apiTargets": [{"service": "generativelanguage.googleapis.com"}]
+      },
+      "create_time": "2024-03-01T10:00:00Z",
+      "uid": "key-uid-002"
+    }
+  ],
+  "enabled_apis": [
+    {"project_id": "test-project-002", "service_name": "apikeys.googleapis.com", "state": "ENABLED"},
+    {"project_id": "test-project-002", "service_name": "generativelanguage.googleapis.com", "state": "ENABLED"},
+    {"project_id": "test-project-002", "service_name": "aiplatform.googleapis.com", "state": "ENABLED"}
+  ],
+  "budgets": [],
+  "org_policies": [],
+  "vertex_ai_endpoints": [],
+  "inaccessible_projects": [],
+  "skipped_apis": {},
+  "collector_errors": []
+}

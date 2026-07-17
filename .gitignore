@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+*.egg
+
+# Testing
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Type checking
+.mypy_cache/
+.ruff_cache/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Reports (generated output)
+gcp-scan-*.json
+gcp-scan-*.md
+gcp-scan-*.html
+gcp-scan-*.sarif
+
+# Cache
+~/.cache/gcp-abuse-scanner/

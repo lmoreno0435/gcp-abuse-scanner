@@ -1,0 +1,93 @@
+{
+  "organization_id": "123456789012",
+  "project_ids": ["test-project-001"],
+  "projects": [
+    {
+      "project_id": "test-project-001",
+      "project_number": "111222333444",
+      "display_name": "Test Project",
+      "organization_id": "123456789012",
+      "billing_account_id": "ABCDEF-123456-GHIJKL"
+    }
+  ],
+  "compute_instances": [
+    {
+      "name": "vm-with-external-ip",
+      "project_id": "test-project-001",
+      "zone": "us-central1-a",
+      "machine_type": "n1-standard-4",
+      "status": "RUNNING",
+      "network_interfaces": [
+        {
+          "network": "global/networks/default",
+          "accessConfigs": [
+            {"type": "ONE_TO_ONE_NAT", "natIP": "34.123.45.67"}
+          ]
+        }
+      ],
+      "metadata": {},
+      "service_accounts": [],
+      "shielded_instance_config": {
+        "enableSecureBoot": false,
+        "enableVtpm": false,
+        "enableIntegrityMonitoring": false
+      },
+      "labels": {},
+      "tags": [],
+      "accelerators": [],
+      "self_link": "https://www.googleapis.com/compute/v1/projects/test-project-001/zones/us-central1-a/instances/vm-with-external-ip"
+    }
+  ],
+  "firewall_rules": [
+    {
+      "name": "allow-ssh-from-internet",
+      "project_id": "test-project-001",
+      "network": "default",
+      "direction": "INGRESS",
+      "priority": 1000,
+      "source_ranges": ["0.0.0.0/0"],
+      "destination_ranges": [],
+      "allowed": [{"IPProtocol": "tcp", "ports": ["22"]}],
+      "denied": [],
+      "target_tags": [],
+      "disabled": false
+    }
+  ],
+  "iam_bindings": [
+    {
+      "resource": "//cloudresourcemanager.googleapis.com/projects/test-project-001",
+      "resource_type": "cloudresourcemanager.googleapis.com/Project",
+      "project_id": "test-project-001",
+      "role": "roles/editor",
+      "members": ["serviceAccount:111222333444-compute@developer.gserviceaccount.com"]
+    }
+  ],
+  "service_accounts": [
+    {
+      "name": "projects/test-project-001/serviceAccounts/my-sa@test-project-001.iam.gserviceaccount.com",
+      "email": "my-sa@test-project-001.iam.gserviceaccount.com",
+      "project_id": "test-project-001",
+      "disabled": false,
+      "keys": [
+        {
+          "name": "projects/test-project-001/serviceAccounts/my-sa@test-project-001.iam.gserviceaccount.com/keys/abc123",
+          "keyType": "USER_MANAGED",
+          "validAfterTime": "2024-01-01T00:00:00Z",
+          "validBeforeTime": "9999-12-31T23:59:59Z"
+        }
+      ]
+    }
+  ],
+  "gke_clusters": [],
+  "cloud_run_services": [],
+  "api_keys": [],
+  "enabled_apis": [
+    {"project_id": "test-project-001", "service_name": "compute.googleapis.com", "state": "ENABLED"}
+  ],
+  "budgets": [],
+  "org_policies": [],
+  "vertex_ai_endpoints": [],
+  "inaccessible_projects": [],
+  "skipped_apis": {},
+  "collector_errors": []
+}

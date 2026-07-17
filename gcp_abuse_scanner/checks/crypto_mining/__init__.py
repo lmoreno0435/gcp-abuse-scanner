@@ -1,0 +1,1 @@
+"""Crypto mining security checks."""
