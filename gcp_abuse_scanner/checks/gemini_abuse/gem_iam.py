@@ -111,9 +111,7 @@ class GEM020BroadVertexIAM(BaseCheck):
                             f"--member=serviceAccount:SPECIFIC_SA --role={binding.role}",
                         ],
                         iac_reference="google_project_iam_binding.members",
-                        docs=[
-                            "https://cloud.google.com/vertex-ai/docs/general/access-control"
-                        ],
+                        docs=["https://cloud.google.com/vertex-ai/docs/general/access-control"],
                         effort=RemediationEffort.MEDIUM,
                     ),
                     references=self.references,
@@ -186,9 +184,7 @@ class GEM021PublicVertexBinding(BaseCheck):
                             f"--member=allAuthenticatedUsers --role={binding.role}",
                         ],
                         iac_reference="google_project_iam_binding.members",
-                        docs=[
-                            "https://cloud.google.com/vertex-ai/docs/general/access-control"
-                        ],
+                        docs=["https://cloud.google.com/vertex-ai/docs/general/access-control"],
                         effort=RemediationEffort.LOW,
                     ),
                     references=self.references,

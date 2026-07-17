@@ -17,6 +17,7 @@ from gcp_abuse_scanner.scoring.engine import ScoringEngine
 # Helpers
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def _f(
     check_id: str = "CM-001",
     severity: Severity = Severity.HIGH,
@@ -52,6 +53,7 @@ def _f(
 # ─────────────────────────────────────────────────────────────────────────────
 # Allowlist edge cases
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestAllowlist:
     def test_wildcard_check_id_suppresses_all_projects(self):
@@ -98,7 +100,9 @@ class TestAllowlist:
 
     def test_suppression_reason_stored(self):
         findings = [_f("CM-001")]
-        engine = ScoringEngine(allowlist=[{"check_id": "CM-001", "reason": "Approved by security team"}])
+        engine = ScoringEngine(
+            allowlist=[{"check_id": "CM-001", "reason": "Approved by security team"}]
+        )
         result = engine.process(findings)
 
         suppressed = next(f for f in result if f.suppressed)
@@ -146,6 +150,7 @@ class TestAllowlist:
 # ─────────────────────────────────────────────────────────────────────────────
 # Priority ranking
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestPriorityRanking:
     def test_ranks_start_at_one(self):
@@ -211,6 +216,7 @@ class TestPriorityRanking:
 # Posture score
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestPostureScore:
     def test_score_100_no_findings(self):
         engine = ScoringEngine()
@@ -229,7 +235,9 @@ class TestPostureScore:
 
     def test_score_never_negative(self):
         engine = ScoringEngine()
-        findings = [_f(f"CM-{i:03d}", severity=Severity.CRITICAL, exploitability=10.0) for i in range(50)]
+        findings = [
+            _f(f"CM-{i:03d}", severity=Severity.CRITICAL, exploitability=10.0) for i in range(50)
+        ]
         summary = engine.build_executive_summary(findings, max_projects=1)
         assert summary.posture_score >= 0.0
 
@@ -266,6 +274,7 @@ class TestPostureScore:
 # ─────────────────────────────────────────────────────────────────────────────
 # Executive summary
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestExecutiveSummary:
     def test_total_findings_excludes_suppressed(self):

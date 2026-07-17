@@ -28,6 +28,7 @@ class GKECollector(BaseCollector):
 
         try:
             import googleapiclient.discovery
+
             container = googleapiclient.discovery.build("container", "v1", credentials=creds)
         except Exception as exc:
             logger.error("Failed to build GKE client: %s", exc)
@@ -35,9 +36,7 @@ class GKECollector(BaseCollector):
 
         for project_id in project_ids:
             if not self.is_api_enabled(inventory, project_id):
-                inventory.skipped_apis.setdefault(project_id, []).append(
-                    "container.googleapis.com"
-                )
+                inventory.skipped_apis.setdefault(project_id, []).append("container.googleapis.com")
                 continue
             try:
                 # list clusters across all locations using '-'
@@ -58,14 +57,10 @@ class GKECollector(BaseCollector):
                             master_authorized_networks_config=cluster.get(
                                 "masterAuthorizedNetworksConfig", {}
                             ),
-                            workload_identity_config=cluster.get(
-                                "workloadIdentityConfig", {}
-                            ),
+                            workload_identity_config=cluster.get("workloadIdentityConfig", {}),
                             node_pools=cluster.get("nodePools", []),
                             legacy_abac=cluster.get("legacyAbac", {}),
-                            private_cluster_config=cluster.get(
-                                "privateClusterConfig", {}
-                            ),
+                            private_cluster_config=cluster.get("privateClusterConfig", {}),
                             autopilot=cluster.get("autopilot", {}),
                         )
                     )

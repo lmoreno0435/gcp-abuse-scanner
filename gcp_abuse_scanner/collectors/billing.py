@@ -28,8 +28,11 @@ class BillingCollector(BaseCollector):
 
         try:
             import googleapiclient.discovery
+
             billing = googleapiclient.discovery.build("cloudbilling", "v1", credentials=creds)
-            budget_client = googleapiclient.discovery.build("billingbudgets", "v1", credentials=creds)
+            budget_client = googleapiclient.discovery.build(
+                "billingbudgets", "v1", credentials=creds
+            )
         except Exception as exc:
             logger.error("Failed to build Billing clients: %s", exc)
             return
@@ -58,8 +61,10 @@ class BillingCollector(BaseCollector):
         # Collect budgets for each billing account
         for ba_id in billing_accounts:
             try:
-                request = budget_client.billingAccounts().budgets().list(
-                    parent=f"billingAccounts/{ba_id}"
+                request = (
+                    budget_client.billingAccounts()
+                    .budgets()
+                    .list(parent=f"billingAccounts/{ba_id}")
                 )
                 while request is not None:
                     response = request.execute()
@@ -74,8 +79,10 @@ class BillingCollector(BaseCollector):
                                 budget_filter=budget.get("budgetFilter", {}),
                             )
                         )
-                    request = budget_client.billingAccounts().budgets().list_next(
-                        previous_request=request, previous_response=response
+                    request = (
+                        budget_client.billingAccounts()
+                        .budgets()
+                        .list_next(previous_request=request, previous_response=response)
                     )
             except Exception as exc:
                 logger.warning("Budget collection failed for billing account %s: %s", ba_id, exc)

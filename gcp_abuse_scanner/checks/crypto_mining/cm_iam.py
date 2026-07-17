@@ -125,9 +125,9 @@ class CM044DefaultComputeSAEditor(BaseCheck):
             if binding.role not in _EDITOR_ROLES:
                 continue
             default_sas = [
-                m for m in binding.members
-                if m.startswith("serviceAccount:") and
-                m.endswith(_COMPUTE_DEFAULT_SA_SUFFIX)
+                m
+                for m in binding.members
+                if m.startswith("serviceAccount:") and m.endswith(_COMPUTE_DEFAULT_SA_SUFFIX)
             ]
             if not default_sas:
                 continue
@@ -205,10 +205,7 @@ class CM041SAUserManagedKeys(BaseCheck):
     def evaluate(self, inventory: ResourceInventory) -> list[Finding]:
         findings: list[Finding] = []
         for sa in inventory.service_accounts:
-            user_keys = [
-                k for k in sa.keys
-                if k.get("keyType") == "USER_MANAGED"
-            ]
+            user_keys = [k for k in sa.keys if k.get("keyType") == "USER_MANAGED"]
             if not user_keys:
                 continue
 

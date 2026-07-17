@@ -45,9 +45,8 @@ class OrgPolicyCollector(BaseCollector):
 
         try:
             import googleapiclient.discovery
-            orgpolicy = googleapiclient.discovery.build(
-                "orgpolicy", "v2", credentials=creds
-            )
+
+            orgpolicy = googleapiclient.discovery.build("orgpolicy", "v2", credentials=creds)
         except Exception as exc:
             logger.error("Failed to build Org Policy client: %s", exc)
             return
@@ -65,9 +64,7 @@ class OrgPolicyCollector(BaseCollector):
             try:
                 self._collect_policies(orgpolicy, inventory, resource)
             except Exception as exc:
-                logger.warning(
-                    "Org Policy collection failed for %s: %s", resource, exc
-                )
+                logger.warning("Org Policy collection failed for %s: %s", resource, exc)
 
     def _collect_policies(
         self, orgpolicy: object, inventory: ResourceInventory, resource: str
@@ -83,9 +80,7 @@ class OrgPolicyCollector(BaseCollector):
                     else (
                         orgpolicy.projects()  # type: ignore
                         .policies()
-                        .get(
-                            name=f"{resource}/policies/{constraint.replace('constraints/', '')}"
-                        )
+                        .get(name=f"{resource}/policies/{constraint.replace('constraints/', '')}")
                         .execute()
                     )
                 )

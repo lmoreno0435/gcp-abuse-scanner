@@ -55,9 +55,7 @@ class BaseCollector(abc.ABC):
         if not self.required_apis:
             return True
         enabled = {
-            api.service_name
-            for api in inventory.enabled_apis
-            if api.project_id == project_id
+            api.service_name for api in inventory.enabled_apis if api.project_id == project_id
         }
         return any(api in enabled for api in self.required_apis)
 

@@ -80,9 +80,7 @@ class CollectorEngine:
                 collector.collect(inventory, project_ids, organization_id)
             except Exception as exc:
                 logger.error("Collector %s failed: %s", collector.name, exc)
-                inventory.collector_errors.append(
-                    {"collector": collector.name, "error": str(exc)}
-                )
+                inventory.collector_errors.append({"collector": collector.name, "error": str(exc)})
 
         # ── Phase 2: concurrent collectors ───────────────────────────────────
         concurrent_collectors: list[BaseCollector] = [

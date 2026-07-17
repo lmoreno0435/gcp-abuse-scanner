@@ -33,7 +33,11 @@ class MarkdownReporter:
             f"**Tool**: `gcp-abuse-scanner` v{meta.tool_version}  ",
             f"**Scan ID**: `{meta.scan_id}`  ",
             f"**Scope**: {meta.scope_type} — "
-            + (f"org `{meta.organization_id}`" if meta.organization_id else ", ".join(f"`{p}`" for p in meta.project_ids[:5])),
+            + (
+                f"org `{meta.organization_id}`"
+                if meta.organization_id
+                else ", ".join(f"`{p}`" for p in meta.project_ids[:5])
+            ),
             f"**Identity**: `{meta.service_account or 'ADC'}`  ",
             f"**Duration**: {meta.duration_seconds:.1f}s" if meta.duration_seconds else "",
             "",

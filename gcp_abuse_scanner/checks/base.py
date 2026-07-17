@@ -102,11 +102,7 @@ class CheckRegistry:
 
     @classmethod
     def checks_for_vector(cls, vector: Vector) -> list[BaseCheck]:
-        return [
-            check_cls()
-            for check_cls in cls._registry.values()
-            if check_cls.vector == vector
-        ]
+        return [check_cls() for check_cls in cls._registry.values() if check_cls.vector == vector]
 
     @classmethod
     def get_check(cls, check_id: str) -> BaseCheck | None:

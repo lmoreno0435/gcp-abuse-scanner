@@ -28,6 +28,7 @@ class CloudRunCollector(BaseCollector):
 
         try:
             import googleapiclient.discovery
+
             run = googleapiclient.discovery.build("run", "v2", credentials=creds)
         except Exception as exc:
             logger.error("Failed to build Cloud Run client: %s", exc)
@@ -35,9 +36,7 @@ class CloudRunCollector(BaseCollector):
 
         for project_id in project_ids:
             if not self.is_api_enabled(inventory, project_id):
-                inventory.skipped_apis.setdefault(project_id, []).append(
-                    "run.googleapis.com"
-                )
+                inventory.skipped_apis.setdefault(project_id, []).append("run.googleapis.com")
                 continue
             try:
                 self._collect_services(run, inventory, project_id)
@@ -51,9 +50,7 @@ class CloudRunCollector(BaseCollector):
                     }
                 )
 
-    def _collect_services(
-        self, run: object, inventory: ResourceInventory, project_id: str
-    ) -> None:
+    def _collect_services(self, run: object, inventory: ResourceInventory, project_id: str) -> None:
         # List services across all regions using '-'
         parent = f"projects/{project_id}/locations/-"
         request = run.projects().locations().services().list(parent=parent)  # type: ignore
@@ -82,8 +79,11 @@ class CloudRunCollector(BaseCollector):
                         template=template,
                     )
                 )
-            request = run.projects().locations().services().list_next(  # type: ignore
-                previous_request=request, previous_response=response
+            request = (
+                run.projects()
+                .locations()
+                .services()
+                .list_next(previous_request=request, previous_response=response)  # type: ignore
             )
 
     @staticmethod

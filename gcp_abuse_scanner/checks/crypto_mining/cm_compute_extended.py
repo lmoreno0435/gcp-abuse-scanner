@@ -91,10 +91,7 @@ class CM002OrgPolicyExternalIPNotRestricted(BaseCheck):
     def evaluate(self, inventory: ResourceInventory) -> list[Finding]:
         findings: list[Finding] = []
 
-        matching = [
-            p for p in inventory.org_policies
-            if p.constraint == self._CONSTRAINT
-        ]
+        matching = [p for p in inventory.org_policies if p.constraint == self._CONSTRAINT]
 
         if not matching:
             # No policy entry at all — constraint is not configured
@@ -321,10 +318,7 @@ class CM003FirewallEgressPermissive(BaseCheck):
 
     @staticmethod
     def _is_open_to_internet(rule: FirewallRule) -> bool:
-        return (
-            "0.0.0.0/0" in rule.destination_ranges
-            or "::/0" in rule.destination_ranges
-        )
+        return "0.0.0.0/0" in rule.destination_ranges or "::/0" in rule.destination_ranges
 
 
 @CheckRegistry.register
@@ -348,7 +342,9 @@ class CM005VMsWithGPUNoRestriction(BaseCheck):
 
             findings.append(
                 Finding(
-                    finding_id=_make_id(self.check_id, instance.project_id, instance.self_link or instance.name),
+                    finding_id=_make_id(
+                        self.check_id, instance.project_id, instance.self_link or instance.name
+                    ),
                     check_id=self.check_id,
                     vector=self.vector,
                     title=self.title,
@@ -412,10 +408,7 @@ class CM005VMsWithGPUNoRestriction(BaseCheck):
     @staticmethod
     def _get_gpu_accelerators(instance: ComputeInstance) -> list[dict]:
         """Return accelerator entries with acceleratorCount > 0."""
-        return [
-            acc for acc in instance.accelerators
-            if acc.get("acceleratorCount", 0) > 0
-        ]
+        return [acc for acc in instance.accelerators if acc.get("acceleratorCount", 0) > 0]
 
 
 @CheckRegistry.register
@@ -423,7 +416,9 @@ class CM006InsecureInstanceMetadata(BaseCheck):
     """VM instance has insecure metadata: serial port enabled or OS Login disabled."""
 
     check_id = "CM-006"
-    title = "VM instance or project has insecure metadata (serial port enabled or OS Login disabled)"
+    title = (
+        "VM instance or project has insecure metadata (serial port enabled or OS Login disabled)"
+    )
     vector = Vector.CRYPTO_MINING
     severity_base = Severity.MEDIUM
     required_collectors = ["compute"]
@@ -439,7 +434,9 @@ class CM006InsecureInstanceMetadata(BaseCheck):
 
             findings.append(
                 Finding(
-                    finding_id=_make_id(self.check_id, instance.project_id, instance.self_link or instance.name),
+                    finding_id=_make_id(
+                        self.check_id, instance.project_id, instance.self_link or instance.name
+                    ),
                     check_id=self.check_id,
                     vector=self.vector,
                     title=self.title,
@@ -545,7 +542,9 @@ class CM007StartupScriptExternalDownload(BaseCheck):
 
             findings.append(
                 Finding(
-                    finding_id=_make_id(self.check_id, instance.project_id, instance.self_link or instance.name),
+                    finding_id=_make_id(
+                        self.check_id, instance.project_id, instance.self_link or instance.name
+                    ),
                     check_id=self.check_id,
                     vector=self.vector,
                     title=self.title,
@@ -614,11 +613,7 @@ class CM007StartupScriptExternalDownload(BaseCheck):
     def _find_suspicious_patterns(script: str) -> list[str]:
         """Return patterns found in the startup script (case-insensitive)."""
         script_lower = script.lower()
-        return [
-            pattern
-            for pattern in _STARTUP_SCRIPT_PATTERNS
-            if pattern.lower() in script_lower
-        ]
+        return [pattern for pattern in _STARTUP_SCRIPT_PATTERNS if pattern.lower() in script_lower]
 
 
 @CheckRegistry.register
@@ -638,10 +633,7 @@ class CM011NoResourceLocationRestriction(BaseCheck):
     def evaluate(self, inventory: ResourceInventory) -> list[Finding]:
         findings: list[Finding] = []
 
-        matching = [
-            p for p in inventory.org_policies
-            if p.constraint == self._CONSTRAINT
-        ]
+        matching = [p for p in inventory.org_policies if p.constraint == self._CONSTRAINT]
 
         if not matching:
             # No policy entry at all — constraint is not configured

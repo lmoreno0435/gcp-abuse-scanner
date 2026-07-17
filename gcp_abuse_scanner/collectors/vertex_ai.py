@@ -46,9 +46,8 @@ class VertexAICollector(BaseCollector):
 
         try:
             import googleapiclient.discovery
-            aiplatform = googleapiclient.discovery.build(
-                "aiplatform", "v1", credentials=creds
-            )
+
+            aiplatform = googleapiclient.discovery.build("aiplatform", "v1", credentials=creds)
         except Exception as exc:
             logger.error("Failed to build Vertex AI client: %s", exc)
             return
@@ -79,19 +78,12 @@ class VertexAICollector(BaseCollector):
         region: str,
     ) -> None:
         parent = f"projects/{project_id}/locations/{region}"
-        request = (
-            aiplatform.projects()  # type: ignore
-            .locations()
-            .endpoints()
-            .list(parent=parent)
-        )
+        request = aiplatform.projects().locations().endpoints().list(parent=parent)  # type: ignore
         while request is not None:
             response = request.execute()
             for endpoint in response.get("endpoints", []):
                 # Try to get IAM policy for the endpoint
-                iam_bindings = self._get_endpoint_iam(
-                    aiplatform, endpoint.get("name", "")
-                )
+                iam_bindings = self._get_endpoint_iam(aiplatform, endpoint.get("name", ""))
                 inventory.vertex_ai_endpoints.append(
                     VertexAIEndpoint(
                         name=endpoint.get("name", "").split("/")[-1],

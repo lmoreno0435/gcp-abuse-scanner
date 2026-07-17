@@ -13,6 +13,7 @@ from gcp_abuse_scanner.models.inventory import (
 # Helpers
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def _make_auth(creds: object = None) -> MagicMock:
     auth = MagicMock()
     auth.get_credentials.return_value = creds or MagicMock()
@@ -29,6 +30,7 @@ def _inventory_with_apis(*service_names: str, project_id: str = "proj-1") -> Res
 # ─────────────────────────────────────────────────────────────────────────────
 # GKECollector
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestGKECollector:
     def test_collects_clusters(self):
@@ -60,13 +62,9 @@ class TestGKECollector:
         with patch("googleapiclient.discovery.build") as mock_build:
             mock_container = MagicMock()
             mock_build.return_value = mock_container
-            (
-                mock_container.projects()
-                .locations()
-                .clusters()
-                .list()
-                .execute.return_value
-            ) = mock_response
+            mock_container.projects().locations().clusters().list().execute.return_value = (
+                mock_response
+            )
 
             collector = GKECollector(auth)
             collector.collect(inv, ["proj-1"])
@@ -102,13 +100,9 @@ class TestGKECollector:
         with patch("googleapiclient.discovery.build") as mock_build:
             mock_container = MagicMock()
             mock_build.return_value = mock_container
-            (
-                mock_container.projects()
-                .locations()
-                .clusters()
-                .list()
-                .execute.side_effect
-            ) = Exception("403 Forbidden")
+            mock_container.projects().locations().clusters().list().execute.side_effect = Exception(
+                "403 Forbidden"
+            )
 
             collector = GKECollector(auth)
             collector.collect(inv, ["proj-1"])
@@ -141,13 +135,9 @@ class TestGKECollector:
         with patch("googleapiclient.discovery.build") as mock_build:
             mock_container = MagicMock()
             mock_build.return_value = mock_container
-            (
-                mock_container.projects()
-                .locations()
-                .clusters()
-                .list()
-                .execute.return_value
-            ) = {"clusters": [mock_cluster]}
+            mock_container.projects().locations().clusters().list().execute.return_value = {
+                "clusters": [mock_cluster]
+            }
 
             collector = GKECollector(auth)
             collector.collect(inv, ["proj-1"])
@@ -159,6 +149,7 @@ class TestGKECollector:
 # ─────────────────────────────────────────────────────────────────────────────
 # CloudRunCollector
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestCloudRunCollector:
     def test_collects_services(self):
@@ -180,24 +171,16 @@ class TestCloudRunCollector:
             mock_build.return_value = mock_run
 
             # list services
-            (
-                mock_run.projects()
-                .locations()
-                .services()
-                .list()
-                .execute.return_value
-            ) = {"services": [mock_service]}
+            mock_run.projects().locations().services().list().execute.return_value = {
+                "services": [mock_service]
+            }
             # list_next returns None (no more pages)
             mock_run.projects().locations().services().list_next.return_value = None
 
             # getIamPolicy
-            (
-                mock_run.projects()
-                .locations()
-                .services()
-                .getIamPolicy()
-                .execute.return_value
-            ) = mock_iam
+            mock_run.projects().locations().services().getIamPolicy().execute.return_value = (
+                mock_iam
+            )
 
             collector = CloudRunCollector(auth)
             collector.collect(inv, ["proj-1"])
@@ -208,9 +191,7 @@ class TestCloudRunCollector:
         assert svc.region == "us-central1"
         assert svc.ingress == "INGRESS_TRAFFIC_ALL"
         # IAM bindings should include allUsers
-        assert any(
-            "allUsers" in b.get("members", []) for b in svc.iam_bindings
-        )
+        assert any("allUsers" in b.get("members", []) for b in svc.iam_bindings)
 
     def test_skips_when_api_not_enabled(self):
         from gcp_abuse_scanner.collectors.cloud_run import CloudRunCollector
@@ -234,13 +215,9 @@ class TestCloudRunCollector:
         with patch("googleapiclient.discovery.build") as mock_build:
             mock_run = MagicMock()
             mock_build.return_value = mock_run
-            (
-                mock_run.projects()
-                .locations()
-                .services()
-                .list()
-                .execute.side_effect
-            ) = Exception("500 Internal Server Error")
+            mock_run.projects().locations().services().list().execute.side_effect = Exception(
+                "500 Internal Server Error"
+            )
 
             collector = CloudRunCollector(auth)
             collector.collect(inv, ["proj-1"])
@@ -252,6 +229,7 @@ class TestCloudRunCollector:
 # ─────────────────────────────────────────────────────────────────────────────
 # VertexAICollector
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestVertexAICollector:
     def test_collects_endpoints(self):
@@ -271,22 +249,14 @@ class TestVertexAICollector:
             mock_ai = MagicMock()
             mock_build.return_value = mock_ai
 
-            (
-                mock_ai.projects()
-                .locations()
-                .endpoints()
-                .list()
-                .execute.return_value
-            ) = {"endpoints": [mock_endpoint]}
+            mock_ai.projects().locations().endpoints().list().execute.return_value = {
+                "endpoints": [mock_endpoint]
+            }
             mock_ai.projects().locations().endpoints().list_next.return_value = None
 
-            (
-                mock_ai.projects()
-                .locations()
-                .endpoints()
-                .getIamPolicy()
-                .execute.return_value
-            ) = mock_iam
+            mock_ai.projects().locations().endpoints().getIamPolicy().execute.return_value = (
+                mock_iam
+            )
 
             collector = VertexAICollector(auth)
             collector.collect(inv, ["proj-1"])
@@ -316,6 +286,7 @@ class TestVertexAICollector:
 # OrgPolicyCollector
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestOrgPolicyCollector:
     def test_collects_org_level_policies(self):
         from gcp_abuse_scanner.collectors.org_policy import OrgPolicyCollector
@@ -333,20 +304,12 @@ class TestOrgPolicyCollector:
             mock_build.return_value = mock_orgpolicy
 
             # Org-level get returns a policy
-            (
-                mock_orgpolicy.organizations()
-                .policies()
-                .get()
-                .execute.return_value
-            ) = mock_policy
+            mock_orgpolicy.organizations().policies().get().execute.return_value = mock_policy
 
             # Project-level get raises (not set)
-            (
-                mock_orgpolicy.projects()
-                .policies()
-                .get()
-                .execute.side_effect
-            ) = Exception("404 Not Found")
+            mock_orgpolicy.projects().policies().get().execute.side_effect = Exception(
+                "404 Not Found"
+            )
 
             collector = OrgPolicyCollector(auth)
             collector.collect(inv, ["proj-1"], organization_id="123")
@@ -368,18 +331,12 @@ class TestOrgPolicyCollector:
             mock_build.return_value = mock_orgpolicy
 
             # All gets raise 404 (policy not configured)
-            (
-                mock_orgpolicy.organizations()
-                .policies()
-                .get()
-                .execute.side_effect
-            ) = Exception("404 Not Found")
-            (
-                mock_orgpolicy.projects()
-                .policies()
-                .get()
-                .execute.side_effect
-            ) = Exception("404 Not Found")
+            mock_orgpolicy.organizations().policies().get().execute.side_effect = Exception(
+                "404 Not Found"
+            )
+            mock_orgpolicy.projects().policies().get().execute.side_effect = Exception(
+                "404 Not Found"
+            )
 
             collector = OrgPolicyCollector(auth)
             collector.collect(inv, ["proj-1"], organization_id="123")
@@ -392,6 +349,7 @@ class TestOrgPolicyCollector:
 # ─────────────────────────────────────────────────────────────────────────────
 # RecommenderCollector
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestRecommenderCollector:
     def test_collects_iam_recommendations(self):
@@ -470,6 +428,7 @@ class TestRecommenderCollector:
 # QuotaCollector
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestQuotaCollector:
     def test_collects_quota_info(self):
         from gcp_abuse_scanner.collectors.quota import QuotaCollector
@@ -507,12 +466,9 @@ class TestQuotaCollector:
             mock_su = MagicMock()
             mock_build.return_value = mock_su
 
-            (
-                mock_su.services()
-                .consumerQuotaMetrics()
-                .list()
-                .execute.return_value
-            ) = mock_metrics_response
+            mock_su.services().consumerQuotaMetrics().list().execute.return_value = (
+                mock_metrics_response
+            )
 
             collector = QuotaCollector(auth)
             collector.collect(inv, ["proj-1"])
@@ -543,6 +499,7 @@ class TestQuotaCollector:
 # ─────────────────────────────────────────────────────────────────────────────
 # CollectorEngine integration (smoke test)
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestCollectorEngine:
     """

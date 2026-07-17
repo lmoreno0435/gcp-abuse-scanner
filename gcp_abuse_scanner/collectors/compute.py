@@ -28,6 +28,7 @@ class ComputeCollector(BaseCollector):
 
         try:
             import googleapiclient.discovery
+
             compute = googleapiclient.discovery.build("compute", "v1", credentials=creds)
         except Exception as exc:
             logger.error("Failed to build Compute client: %s", exc)
@@ -41,13 +42,17 @@ class ComputeCollector(BaseCollector):
                 self._collect_instances(compute, inventory, project_id)
             except Exception as exc:
                 logger.warning("Compute collection failed for %s: %s", project_id, exc)
-                inventory.collector_errors.append({
-                    "collector": self.name,
-                    "project_id": project_id,
-                    "error": str(exc),
-                })
+                inventory.collector_errors.append(
+                    {
+                        "collector": self.name,
+                        "project_id": project_id,
+                        "error": str(exc),
+                    }
+                )
 
-    def _collect_instances(self, compute: object, inventory: ResourceInventory, project_id: str) -> None:
+    def _collect_instances(
+        self, compute: object, inventory: ResourceInventory, project_id: str
+    ) -> None:
         # aggregatedList returns instances across all zones
         request = compute.instances().aggregatedList(project=project_id, maxResults=500)  # type: ignore
         while request is not None:

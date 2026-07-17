@@ -64,7 +64,9 @@ class ScoringEngine:
                 if self._matches_allowlist(finding, rule):
                     finding.suppressed = True
                     finding.suppression_reason = rule.get("reason", "Suppressed by allowlist")
-                    logger.debug("Suppressed finding %s: %s", finding.finding_id, finding.suppression_reason)
+                    logger.debug(
+                        "Suppressed finding %s: %s", finding.finding_id, finding.suppression_reason
+                    )
                     break
         return findings
 
@@ -168,9 +170,7 @@ class ScoringEngine:
         if not findings:
             return 100.0
 
-        total_penalty = sum(
-            _SEVERITY_WEIGHTS.get(f.severity, 0) for f in findings
-        )
+        total_penalty = sum(_SEVERITY_WEIGHTS.get(f.severity, 0) for f in findings)
         # Normalize: assume ~20 checks per project as baseline
         baseline = max(max_projects * 20 * _SEVERITY_WEIGHTS[Severity.LOW], 1)
         score = max(0.0, 100.0 - (total_penalty / baseline * 100))

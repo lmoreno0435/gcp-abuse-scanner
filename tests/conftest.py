@@ -28,6 +28,7 @@ from gcp_abuse_scanner.models.report import (
 
 # ─── Finding factories ────────────────────────────────────────────────────────
 
+
 @pytest.fixture
 def make_finding():
     """Factory fixture: returns a callable that creates Finding objects."""
@@ -89,6 +90,7 @@ def sample_inventory() -> ResourceInventory:
 
 # ─── Report factory ───────────────────────────────────────────────────────────
 
+
 @pytest.fixture
 def make_report(make_finding):
     """Factory fixture: returns a callable that creates ScanReport objects."""
@@ -146,6 +148,7 @@ def sample_report(make_report) -> ScanReport:
 
 # ─── File fixtures ────────────────────────────────────────────────────────────
 
+
 @pytest.fixture
 def fixtures_dir() -> Path:
     """Path to tests/fixtures/."""
@@ -156,6 +159,7 @@ def fixtures_dir() -> Path:
 def crypto_inventory_fixture(fixtures_dir) -> dict:
     """Raw dict from inventory_crypto_mining.json."""
     import json
+
     return json.loads((fixtures_dir / "inventory_crypto_mining.json").read_text())
 
 
@@ -163,4 +167,5 @@ def crypto_inventory_fixture(fixtures_dir) -> dict:
 def gemini_inventory_fixture(fixtures_dir) -> dict:
     """Raw dict from inventory_gemini_abuse.json."""
     import json
+
     return json.loads((fixtures_dir / "inventory_gemini_abuse.json").read_text())

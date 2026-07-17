@@ -13,6 +13,7 @@ from gcp_abuse_scanner.auth.manager import AuthError, AuthManager
 # AuthManager — identity property
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestAuthManagerIdentity:
     def test_identity_impersonation(self):
         auth = AuthManager(impersonate_service_account="sa@proj.iam.gserviceaccount.com")
@@ -37,6 +38,7 @@ class TestAuthManagerIdentity:
 # ─────────────────────────────────────────────────────────────────────────────
 # AuthManager — key file validation
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestAuthManagerKeyFile:
     def test_missing_key_file_raises_auth_error(self):
@@ -94,6 +96,7 @@ class TestAuthManagerKeyFile:
 # AuthManager — impersonation
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestAuthManagerImpersonation:
     def test_impersonation_calls_google_auth_default(self):
         auth = AuthManager(impersonate_service_account="sa@proj.iam.gserviceaccount.com")
@@ -101,11 +104,13 @@ class TestAuthManagerImpersonation:
         mock_source_creds = MagicMock()
         mock_impersonated = MagicMock()
 
-        with patch("google.auth.default", return_value=(mock_source_creds, "proj")) as mock_default, \
-             patch(
-                 "google.auth.impersonated_credentials.Credentials",
-                 return_value=mock_impersonated,
-             ) as mock_imp:
+        with (
+            patch("google.auth.default", return_value=(mock_source_creds, "proj")) as mock_default,
+            patch(
+                "google.auth.impersonated_credentials.Credentials",
+                return_value=mock_impersonated,
+            ) as mock_imp,
+        ):
             creds = auth.get_credentials()
 
         mock_default.assert_called_once()
@@ -119,11 +124,13 @@ class TestAuthManagerImpersonation:
         mock_source = MagicMock()
         mock_imp_creds = MagicMock()
 
-        with patch("google.auth.default", return_value=(mock_source, "proj")), \
-             patch(
-                 "google.auth.impersonated_credentials.Credentials",
-                 return_value=mock_imp_creds,
-             ) as mock_cls:
+        with (
+            patch("google.auth.default", return_value=(mock_source, "proj")),
+            patch(
+                "google.auth.impersonated_credentials.Credentials",
+                return_value=mock_imp_creds,
+            ) as mock_cls,
+        ):
             auth.get_credentials()
 
         call_kwargs = mock_cls.call_args.kwargs
@@ -133,6 +140,7 @@ class TestAuthManagerImpersonation:
 # ─────────────────────────────────────────────────────────────────────────────
 # AuthManager — ADC
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestAuthManagerADC:
     def test_adc_calls_google_auth_default(self):
@@ -150,9 +158,11 @@ class TestAuthManagerADC:
 # ScopeResolver — project list mode (no GCP calls)
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestScopeResolverProjectList:
     def _make_resolver(self):
         from gcp_abuse_scanner.auth.scope import ScopeResolver
+
         mock_auth = MagicMock()
         return ScopeResolver(auth_manager=mock_auth)
 
@@ -208,9 +218,11 @@ class TestScopeResolverProjectList:
 # ScopeResolver — org mode (mocked GCP call)
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestScopeResolverOrgMode:
     def _make_resolver(self):
         from gcp_abuse_scanner.auth.scope import ScopeResolver
+
         mock_auth = MagicMock()
         mock_auth.get_credentials.return_value = MagicMock()
         return ScopeResolver(auth_manager=mock_auth)

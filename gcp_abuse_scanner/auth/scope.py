@@ -50,9 +50,7 @@ class ScopeResolver:
 
         if organization_id:
             projects = self._enumerate_org_projects(organization_id)
-            logger.info(
-                "Found %d projects under org %s", len(projects), organization_id
-            )
+            logger.info("Found %d projects under org %s", len(projects), organization_id)
         else:
             projects = list(project_ids or [])
 

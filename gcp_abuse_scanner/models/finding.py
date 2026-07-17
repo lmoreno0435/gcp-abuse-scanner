@@ -32,9 +32,9 @@ class FindingStatus(str, Enum):
 
 
 class RemediationEffort(str, Enum):
-    LOW = "LOW"      # < 1 hour
+    LOW = "LOW"  # < 1 hour
     MEDIUM = "MEDIUM"  # 1–4 hours
-    HIGH = "HIGH"    # > 4 hours / requires planning
+    HIGH = "HIGH"  # > 4 hours / requires planning
 
 
 class GCPResource(BaseModel):
@@ -73,7 +73,9 @@ class Finding(BaseModel):
     # Prioritization
     priority_rank: int | None = None
     exploitability_score: float = Field(default=5.0, ge=0.0, le=10.0)
-    blast_radius: str = Field(default="project", description="project | organization | billing_account")
+    blast_radius: str = Field(
+        default="project", description="project | organization | billing_account"
+    )
 
     # Context
     resource: GCPResource

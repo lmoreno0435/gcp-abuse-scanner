@@ -128,9 +128,7 @@ class CMN002BudgetNoAlerts(BaseCheck):
 
             findings.append(
                 Finding(
-                    finding_id=_make_id(
-                        self.check_id, budget.billing_account_id, budget.name
-                    ),
+                    finding_id=_make_id(self.check_id, budget.billing_account_id, budget.name),
                     check_id=self.check_id,
                     vector=self.vector,
                     title=self.title,
@@ -171,7 +169,9 @@ class CMN002BudgetNoAlerts(BaseCheck):
                             "# Terraform: google_billing_budget.threshold_rules",
                         ],
                         iac_reference="google_billing_budget.threshold_rules",
-                        docs=["https://cloud.google.com/billing/docs/how-to/budgets#add-threshold-rules"],
+                        docs=[
+                            "https://cloud.google.com/billing/docs/how-to/budgets#add-threshold-rules"
+                        ],
                         effort=RemediationEffort.LOW,
                     ),
                     references=[],

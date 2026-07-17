@@ -29,9 +29,7 @@ class IAMCollector(BaseCollector):
         client = asset_v1.AssetServiceClient(credentials=creds)
 
         scope = (
-            f"organizations/{organization_id}"
-            if organization_id
-            else f"projects/{project_ids[0]}"
+            f"organizations/{organization_id}" if organization_id else f"projects/{project_ids[0]}"
         )
 
         try:

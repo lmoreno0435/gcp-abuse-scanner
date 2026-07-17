@@ -256,8 +256,7 @@ class GEM005OrphanAPIKeys(BaseCheck):
                         ],
                         gcloud_commands=[
                             f"gcloud services api-keys list --project={project_id}",
-                            "gcloud services api-keys delete KEY_ID --project="
-                            + project_id,
+                            "gcloud services api-keys delete KEY_ID --project=" + project_id,
                         ],
                         iac_reference="google_apikeys_key.restrictions.api_targets",
                         docs=[
@@ -281,9 +280,7 @@ class GEM006APIKeyNoReferrerRestriction(BaseCheck):
     """API key targeting Gemini/Generative Language API has no HTTP referrer restriction."""
 
     check_id = "GEM-006"
-    title = (
-        "API key targeting Gemini/Generative Language API has no HTTP referrer restriction"
-    )
+    title = "API key targeting Gemini/Generative Language API has no HTTP referrer restriction"
     vector = Vector.GEMINI_ABUSE
     severity_base = Severity.HIGH
     required_collectors = ["api_keys"]
@@ -370,9 +367,7 @@ class GEM010GenerativeLanguageAPIEnabled(BaseCheck):
     """generativelanguage.googleapis.com is enabled — Gemini API surface exposed."""
 
     check_id = "GEM-010"
-    title = (
-        "generativelanguage.googleapis.com is enabled in project (Gemini API surface exposed)"
-    )
+    title = "generativelanguage.googleapis.com is enabled in project (Gemini API surface exposed)"
     vector = Vector.GEMINI_ABUSE
     severity_base = Severity.MEDIUM
     required_collectors = ["service_usage"]
@@ -549,9 +544,7 @@ class GEM011VertexAIEnabledNoBroadIAMControls(BaseCheck):
                             "--member=BROAD_MEMBER --role=ROLE",
                         ],
                         iac_reference="google_project_iam_binding",
-                        docs=[
-                            "https://cloud.google.com/vertex-ai/docs/general/access-control"
-                        ],
+                        docs=["https://cloud.google.com/vertex-ai/docs/general/access-control"],
                         effort=RemediationEffort.MEDIUM,
                     ),
                     references=self.references,
@@ -586,7 +579,7 @@ class GEM022SAWithVertexAccessAndExportedKeys(BaseCheck):
                 continue
             for member in binding.members:
                 if member.startswith("serviceAccount:"):
-                    sa_email = member[len("serviceAccount:"):]
+                    sa_email = member[len("serviceAccount:") :]
                     vertex_sa_emails[sa_email].append(binding.role)
 
         if not vertex_sa_emails:
@@ -596,9 +589,7 @@ class GEM022SAWithVertexAccessAndExportedKeys(BaseCheck):
         for sa in inventory.service_accounts:
             if sa.email not in vertex_sa_emails:
                 continue
-            user_managed_keys = [
-                k for k in sa.keys if k.get("keyType") == "USER_MANAGED"
-            ]
+            user_managed_keys = [k for k in sa.keys if k.get("keyType") == "USER_MANAGED"]
             if not user_managed_keys:
                 continue
 
@@ -784,9 +775,7 @@ class GEM030VertexEndpointNoPrivateNetwork(BaseCheck):
 
             findings.append(
                 Finding(
-                    finding_id=_make_id(
-                        self.check_id, endpoint.project_id, endpoint.name
-                    ),
+                    finding_id=_make_id(self.check_id, endpoint.project_id, endpoint.name),
                     check_id=self.check_id,
                     vector=self.vector,
                     title=self.title,
@@ -983,9 +972,7 @@ class GEM050NoAPIKeyCreationRestriction(BaseCheck):
 
         # Look for the constraint in org policies
         matching_policies = [
-            p
-            for p in inventory.org_policies
-            if p.constraint == _SA_KEY_CREATION_CONSTRAINT
+            p for p in inventory.org_policies if p.constraint == _SA_KEY_CREATION_CONSTRAINT
         ]
 
         # If the constraint is absent entirely, or all matching policies are empty → FAIL
@@ -1026,9 +1013,11 @@ class GEM050NoAPIKeyCreationRestriction(BaseCheck):
                     },
                     description=(
                         f"The org policy constraint '{_SA_KEY_CREATION_CONSTRAINT}' is "
-                        + ("present but has an empty/unconfigured policy."
-                           if constraint_present
-                           else "absent from the organization.")
+                        + (
+                            "present but has an empty/unconfigured policy."
+                            if constraint_present
+                            else "absent from the organization."
+                        )
                         + " Without this policy, any project owner can create exportable "
                         "service account keys that could be used to call Gemini APIs."
                     ),
@@ -1048,8 +1037,7 @@ class GEM050NoAPIKeyCreationRestriction(BaseCheck):
                             "Use exceptions (folder/project overrides) only where strictly needed.",
                         ],
                         gcloud_commands=[
-                            "gcloud org-policies set-policy policy.yaml "
-                            "--organization=ORG_ID",
+                            "gcloud org-policies set-policy policy.yaml " "--organization=ORG_ID",
                             "# policy.yaml:\n"
                             "# name: organizations/ORG_ID/policies/"
                             "iam.disableServiceAccountKeyCreation\n"
@@ -1160,10 +1148,7 @@ class GEM051NoBudgetForVertexAI(BaseCheck):
             if not services:
                 # Empty services list means "all services" — counts as covered
                 return True
-            return any(
-                any(g in svc for g in self._GEMINI_BUDGET_SERVICES)
-                for svc in services
-            )
+            return any(any(g in svc for g in self._GEMINI_BUDGET_SERVICES) for svc in services)
 
         covered_budgets = [b for b in inventory.budgets if _covers_gemini(b)]
         if covered_budgets:

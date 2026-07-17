@@ -72,6 +72,7 @@ class QuotaCollector(BaseCollector):
 
         try:
             import googleapiclient.discovery
+
             serviceusage = googleapiclient.discovery.build(
                 "serviceusage", "v1beta1", credentials=creds
             )
@@ -137,6 +138,4 @@ class QuotaCollector(BaseCollector):
                         inventory.quota_info.append(quota_entry)  # type: ignore[attr-defined]
 
             except Exception as exc:
-                logger.debug(
-                    "Quota fetch failed for %s/%s: %s", project_id, service_name, exc
-                )
+                logger.debug("Quota fetch failed for %s/%s: %s", project_id, service_name, exc)

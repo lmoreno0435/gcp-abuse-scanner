@@ -110,7 +110,9 @@ def scan(
     ] = False,
     use_cache: Annotated[
         bool,
-        typer.Option("--cache/--no-cache", help="Cache inventory to disk (TTL 1h). Speeds up re-runs."),
+        typer.Option(
+            "--cache/--no-cache", help="Cache inventory to disk (TTL 1h). Speeds up re-runs."
+        ),
     ] = False,
     cache_ttl: Annotated[
         int,
@@ -176,6 +178,7 @@ def scan(
     allowlist: list[dict] = []
     if allowlist_file and allowlist_file.exists():
         import yaml
+
         allowlist = yaml.safe_load(allowlist_file.read_text()) or []
 
     # Collect inventory (with optional cache)
@@ -196,6 +199,7 @@ def scan(
     # Filter by vector if specified
     if vector:
         from gcp_abuse_scanner.models.finding import Vector as VectorEnum
+
         allowed_vectors = {VectorEnum(v) for v in vector}
         checks = [c for c in checks if c.vector in allowed_vectors]
 
@@ -281,8 +285,13 @@ def _write_output(report: ScanReport, format: OutputFormat, output: Path | None)
     scan_prefix = f"gcp-scan-{report.metadata.scan_id[:8]}"
 
     formats_to_render = (
-        [OutputFormat.console, OutputFormat.json, OutputFormat.markdown,
-         OutputFormat.html, OutputFormat.sarif]
+        [
+            OutputFormat.console,
+            OutputFormat.json,
+            OutputFormat.markdown,
+            OutputFormat.html,
+            OutputFormat.sarif,
+        ]
         if format == OutputFormat.all
         else [format]
     )
@@ -357,6 +366,7 @@ def list_checks(
 def version() -> None:
     """Show version information."""
     from gcp_abuse_scanner import __version__
+
     console.print(f"gcp-abuse-scanner v{__version__}")
 
 

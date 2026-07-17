@@ -17,6 +17,7 @@ runner = CliRunner()
 # Helpers
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def _make_mock_report(has_critical: bool = False, finding_count: int = 1):
     """Build a minimal mock ScanReport."""
     from datetime import datetime
@@ -40,31 +41,33 @@ def _make_mock_report(has_critical: bool = False, finding_count: int = 1):
     sev = Severity.CRITICAL if has_critical else Severity.HIGH
     findings = []
     for i in range(finding_count):
-        findings.append(Finding(
-            finding_id=f"CM-001-proj-{i}",
-            check_id="CM-001",
-            vector=Vector.CRYPTO_MINING,
-            title="Test finding",
-            severity=sev,
-            status=FindingStatus.FAIL,
-            exploitability_score=7.5,
-            blast_radius="project",
-            priority_rank=i + 1,
-            resource=GCPResource(
-                resource_type="compute.googleapis.com/Instance",
-                resource_id=f"projects/proj-1/zones/us-central1-a/instances/vm-{i}",
-                project_id="proj-1",
-                region="us-central1-a",
-            ),
-            evidence={},
-            description="desc",
-            impact="impact",
-            remediation=Remediation(
-                summary="Fix it.",
-                steps=["Step 1."],
-                effort=RemediationEffort.LOW,
-            ),
-        ))
+        findings.append(
+            Finding(
+                finding_id=f"CM-001-proj-{i}",
+                check_id="CM-001",
+                vector=Vector.CRYPTO_MINING,
+                title="Test finding",
+                severity=sev,
+                status=FindingStatus.FAIL,
+                exploitability_score=7.5,
+                blast_radius="project",
+                priority_rank=i + 1,
+                resource=GCPResource(
+                    resource_type="compute.googleapis.com/Instance",
+                    resource_id=f"projects/proj-1/zones/us-central1-a/instances/vm-{i}",
+                    project_id="proj-1",
+                    region="us-central1-a",
+                ),
+                evidence={},
+                description="desc",
+                impact="impact",
+                remediation=Remediation(
+                    summary="Fix it.",
+                    steps=["Step 1."],
+                    effort=RemediationEffort.LOW,
+                ),
+            )
+        )
 
     return ScanReport(
         metadata=ScanMetadata(
@@ -84,7 +87,8 @@ def _make_mock_report(has_critical: bool = False, finding_count: int = 1):
             by_severity=SeveritySummary(
                 critical=finding_count if has_critical else 0,
                 high=0 if has_critical else finding_count,
-                medium=0, low=0,
+                medium=0,
+                low=0,
                 total=finding_count,
             ),
             by_vector=[VectorSummary(vector="crypto_mining", findings_count=finding_count)],
@@ -128,6 +132,7 @@ def _patch_scan_internals(report=None, project_ids=None):
 # version command
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestVersionCommand:
     def test_version_exits_zero(self):
         result = runner.invoke(app, ["version"])
@@ -148,6 +153,7 @@ class TestVersionCommand:
 # ─────────────────────────────────────────────────────────────────────────────
 # list-checks command
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestListChecksCommand:
     def test_list_checks_exits_zero(self):
@@ -173,13 +179,21 @@ class TestListChecksCommand:
         result = runner.invoke(app, ["list-checks", "--vector", "gemini_abuse"])
         assert result.exit_code == 0
         # Gemini vector checks always mention API key or Vertex AI
-        assert "API key" in result.output or "Vertex AI" in result.output or "aiplatform" in result.output
+        assert (
+            "API key" in result.output
+            or "Vertex AI" in result.output
+            or "aiplatform" in result.output
+        )
 
     def test_list_checks_filter_common(self):
         result = runner.invoke(app, ["list-checks", "--vector", "common"])
         assert result.exit_code == 0
         # Common checks always mention budget or audit
-        assert "budget" in result.output.lower() or "audit" in result.output.lower() or "billing" in result.output.lower()
+        assert (
+            "budget" in result.output.lower()
+            or "audit" in result.output.lower()
+            or "billing" in result.output.lower()
+        )
 
     def test_list_checks_shows_total_count(self):
         result = runner.invoke(app, ["list-checks"])
@@ -194,6 +208,7 @@ class TestListChecksCommand:
 # ─────────────────────────────────────────────────────────────────────────────
 # scan command — argument validation (no GCP calls needed)
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestScanArgumentValidation:
     def test_scan_requires_org_or_project(self):
@@ -243,6 +258,7 @@ class TestScanArgumentValidation:
 # scan command — dry-run (mocked scope, no collectors)
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestScanDryRun:
     def test_dry_run_exits_zero(self):
         mock_auth = MagicMock()
@@ -250,8 +266,10 @@ class TestScanDryRun:
         mock_scope = MagicMock()
         mock_scope.resolve_projects.return_value = ["proj-1"]
 
-        with patch("gcp_abuse_scanner.auth.AuthManager", return_value=mock_auth), \
-             patch("gcp_abuse_scanner.auth.ScopeResolver", return_value=mock_scope):
+        with (
+            patch("gcp_abuse_scanner.auth.AuthManager", return_value=mock_auth),
+            patch("gcp_abuse_scanner.auth.ScopeResolver", return_value=mock_scope),
+        ):
             result = runner.invoke(app, ["scan", "--project", "proj-1", "--dry-run"])
 
         assert result.exit_code == 0
@@ -262,8 +280,10 @@ class TestScanDryRun:
         mock_scope = MagicMock()
         mock_scope.resolve_projects.return_value = ["proj-1"]
 
-        with patch("gcp_abuse_scanner.auth.AuthManager", return_value=mock_auth), \
-             patch("gcp_abuse_scanner.auth.ScopeResolver", return_value=mock_scope):
+        with (
+            patch("gcp_abuse_scanner.auth.AuthManager", return_value=mock_auth),
+            patch("gcp_abuse_scanner.auth.ScopeResolver", return_value=mock_scope),
+        ):
             result = runner.invoke(app, ["scan", "--project", "proj-1", "--dry-run"])
 
         # Should list check IDs
@@ -276,8 +296,10 @@ class TestScanDryRun:
         mock_scope = MagicMock()
         mock_scope.resolve_projects.return_value = []
 
-        with patch("gcp_abuse_scanner.auth.AuthManager", return_value=mock_auth), \
-             patch("gcp_abuse_scanner.auth.ScopeResolver", return_value=mock_scope):
+        with (
+            patch("gcp_abuse_scanner.auth.AuthManager", return_value=mock_auth),
+            patch("gcp_abuse_scanner.auth.ScopeResolver", return_value=mock_scope),
+        ):
             result = runner.invoke(app, ["scan", "--project", "proj-1", "--dry-run"])
 
         assert result.exit_code == 0  # exits early with "no projects" warning
@@ -287,8 +309,10 @@ class TestScanDryRun:
         mock_scope = MagicMock()
         mock_scope.resolve_projects.side_effect = RuntimeError("Permission denied")
 
-        with patch("gcp_abuse_scanner.auth.AuthManager", return_value=mock_auth), \
-             patch("gcp_abuse_scanner.auth.ScopeResolver", return_value=mock_scope):
+        with (
+            patch("gcp_abuse_scanner.auth.AuthManager", return_value=mock_auth),
+            patch("gcp_abuse_scanner.auth.ScopeResolver", return_value=mock_scope),
+        ):
             result = runner.invoke(app, ["scan", "--project", "proj-1", "--dry-run"])
 
         assert result.exit_code == 1
@@ -297,6 +321,7 @@ class TestScanDryRun:
 # ─────────────────────────────────────────────────────────────────────────────
 # scan command — full pipeline (all internals mocked)
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestScanFullPipeline:
     def _run_scan_mocked(self, extra_args=None, has_critical=False, finding_count=1):
@@ -329,12 +354,14 @@ class TestScanFullPipeline:
 
         args = ["scan", "--project", "proj-1"] + (extra_args or [])
 
-        with patch("gcp_abuse_scanner.auth.AuthManager", return_value=mock_auth), \
-             patch("gcp_abuse_scanner.auth.ScopeResolver", return_value=mock_scope), \
-             patch("gcp_abuse_scanner.collectors.engine.CollectorEngine", return_value=mock_engine), \
-             patch("gcp_abuse_scanner.scoring.ScoringEngine", return_value=mock_scoring), \
-             patch("gcp_abuse_scanner.checks.CheckRegistry.all_checks", return_value=[mock_check]), \
-             patch("gcp_abuse_scanner.checks.CheckRegistry.list_metadata", return_value=[]):
+        with (
+            patch("gcp_abuse_scanner.auth.AuthManager", return_value=mock_auth),
+            patch("gcp_abuse_scanner.auth.ScopeResolver", return_value=mock_scope),
+            patch("gcp_abuse_scanner.collectors.engine.CollectorEngine", return_value=mock_engine),
+            patch("gcp_abuse_scanner.scoring.ScoringEngine", return_value=mock_scoring),
+            patch("gcp_abuse_scanner.checks.CheckRegistry.all_checks", return_value=[mock_check]),
+            patch("gcp_abuse_scanner.checks.CheckRegistry.list_metadata", return_value=[]),
+        ):
             result = runner.invoke(app, args)
 
         return result
@@ -378,6 +405,7 @@ class TestScanFullPipeline:
     def test_scan_all_format_creates_multiple_files(self, tmp_path):
         """--format all should produce json, md, html, sarif files."""
         import os
+
         orig_dir = os.getcwd()
         os.chdir(tmp_path)
         try:

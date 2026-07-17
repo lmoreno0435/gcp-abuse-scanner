@@ -44,9 +44,8 @@ class RecommenderCollector(BaseCollector):
 
         try:
             import googleapiclient.discovery
-            recommender = googleapiclient.discovery.build(
-                "recommender", "v1", credentials=creds
-            )
+
+            recommender = googleapiclient.discovery.build("recommender", "v1", credentials=creds)
         except Exception as exc:
             logger.error("Failed to build Recommender client: %s", exc)
             return
@@ -63,9 +62,7 @@ class RecommenderCollector(BaseCollector):
                 continue
             for location in _RECOMMENDER_LOCATIONS:
                 try:
-                    self._collect_iam_recommendations(
-                        recommender, inventory, project_id, location
-                    )
+                    self._collect_iam_recommendations(recommender, inventory, project_id, location)
                 except Exception as exc:
                     logger.debug(
                         "Recommender collection failed for %s/%s: %s",
@@ -82,8 +79,7 @@ class RecommenderCollector(BaseCollector):
         location: str,
     ) -> None:
         parent = (
-            f"projects/{project_id}/locations/{location}/"
-            f"recommenders/{_IAM_RECOMMENDER_ID}"
+            f"projects/{project_id}/locations/{location}/" f"recommenders/{_IAM_RECOMMENDER_ID}"
         )
         try:
             request = (

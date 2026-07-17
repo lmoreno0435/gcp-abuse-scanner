@@ -35,8 +35,11 @@ def clean_inventory() -> ResourceInventory:
 
 # --- GEM-001 ---
 
+
 class TestGEM001NoAPIRestrictions:
-    def test_fail_when_key_has_no_api_restrictions(self, gemini_inventory: ResourceInventory) -> None:
+    def test_fail_when_key_has_no_api_restrictions(
+        self, gemini_inventory: ResourceInventory
+    ) -> None:
         check = GEM001NoAPIRestrictions()
         findings = check.evaluate(gemini_inventory)
         # "Frontend Key" has no restrictions at all
@@ -46,6 +49,7 @@ class TestGEM001NoAPIRestrictions:
 
     def test_pass_when_key_has_api_restrictions(self, clean_inventory: ResourceInventory) -> None:
         from gcp_abuse_scanner.models.inventory import APIKey
+
         clean_inventory.api_keys.append(
             APIKey(
                 name="projects/clean-project/locations/global/keys/restricted-key",
@@ -65,16 +69,22 @@ class TestGEM001NoAPIRestrictions:
 
 # --- GEM-002 ---
 
+
 class TestGEM002NoAppRestrictions:
-    def test_fail_when_key_has_no_app_restrictions(self, gemini_inventory: ResourceInventory) -> None:
+    def test_fail_when_key_has_no_app_restrictions(
+        self, gemini_inventory: ResourceInventory
+    ) -> None:
         check = GEM002NoAppRestrictions()
         findings = check.evaluate(gemini_inventory)
         # Both keys in fixture have no app restrictions
         assert len(findings) == 2
         assert all(f.severity == Severity.CRITICAL for f in findings)
 
-    def test_pass_when_key_has_browser_restrictions(self, clean_inventory: ResourceInventory) -> None:
+    def test_pass_when_key_has_browser_restrictions(
+        self, clean_inventory: ResourceInventory
+    ) -> None:
         from gcp_abuse_scanner.models.inventory import APIKey
+
         clean_inventory.api_keys.append(
             APIKey(
                 name="projects/clean-project/locations/global/keys/browser-key",
@@ -92,8 +102,11 @@ class TestGEM002NoAppRestrictions:
 
 # --- GEM-003 ---
 
+
 class TestGEM003KeyTargetsGemini:
-    def test_fail_when_gemini_key_has_no_app_restrictions(self, gemini_inventory: ResourceInventory) -> None:
+    def test_fail_when_gemini_key_has_no_app_restrictions(
+        self, gemini_inventory: ResourceInventory
+    ) -> None:
         check = GEM003KeyTargetsGemini()
         findings = check.evaluate(gemini_inventory)
         # "Gemini Key" targets generativelanguage but has no app restrictions
@@ -101,8 +114,11 @@ class TestGEM003KeyTargetsGemini:
         assert findings[0].check_id == "GEM-003"
         assert findings[0].severity == Severity.HIGH
 
-    def test_pass_when_gemini_key_has_app_restrictions(self, clean_inventory: ResourceInventory) -> None:
+    def test_pass_when_gemini_key_has_app_restrictions(
+        self, clean_inventory: ResourceInventory
+    ) -> None:
         from gcp_abuse_scanner.models.inventory import APIKey
+
         clean_inventory.api_keys.append(
             APIKey(
                 name="projects/clean-project/locations/global/keys/gemini-restricted",
@@ -121,6 +137,7 @@ class TestGEM003KeyTargetsGemini:
 
 # --- GEM-020 ---
 
+
 class TestGEM020BroadVertexIAM:
     def test_fail_when_domain_has_vertex_role(self, gemini_inventory: ResourceInventory) -> None:
         check = GEM020BroadVertexIAM()
@@ -131,6 +148,7 @@ class TestGEM020BroadVertexIAM:
 
     def test_pass_when_only_specific_sa(self, clean_inventory: ResourceInventory) -> None:
         from gcp_abuse_scanner.models.inventory import IAMBinding
+
         clean_inventory.iam_bindings.append(
             IAMBinding(
                 resource="//cloudresourcemanager.googleapis.com/projects/clean-project",
@@ -146,6 +164,7 @@ class TestGEM020BroadVertexIAM:
 
 
 # --- GEM-021 ---
+
 
 class TestGEM021PublicVertexBinding:
     def test_fail_when_all_authenticated_users_has_vertex_role(

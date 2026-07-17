@@ -28,6 +28,7 @@ class APIKeysCollector(BaseCollector):
 
         try:
             import googleapiclient.discovery
+
             apikeys = googleapiclient.discovery.build("apikeys", "v2", credentials=creds)
         except Exception as exc:
             logger.error("Failed to build API Keys client: %s", exc)
@@ -38,8 +39,11 @@ class APIKeysCollector(BaseCollector):
                 inventory.skipped_apis.setdefault(project_id, []).append("apikeys.googleapis.com")
                 continue
             try:
-                request = apikeys.projects().locations().keys().list(  # type: ignore
-                    parent=f"projects/{project_id}/locations/global"
+                request = (
+                    apikeys.projects()
+                    .locations()
+                    .keys()
+                    .list(parent=f"projects/{project_id}/locations/global")  # type: ignore
                 )
                 while request is not None:
                     response = request.execute()
@@ -54,8 +58,13 @@ class APIKeysCollector(BaseCollector):
                                 uid=key.get("uid", ""),
                             )
                         )
-                    request = apikeys.projects().locations().keys().list_next(  # type: ignore
-                        previous_request=request, previous_response=response
+                    request = (
+                        apikeys.projects()
+                        .locations()
+                        .keys()
+                        .list_next(  # type: ignore
+                            previous_request=request, previous_response=response
+                        )
                     )
             except Exception as exc:
                 logger.warning("API Keys collection failed for %s: %s", project_id, exc)

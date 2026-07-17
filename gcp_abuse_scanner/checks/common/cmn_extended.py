@@ -53,9 +53,7 @@ class CMN003ProjectNoOwnerLabel(BaseCheck):
 
         for project_id in inventory.project_ids:
             project_instances = [
-                inst
-                for inst in inventory.compute_instances
-                if inst.project_id == project_id
+                inst for inst in inventory.compute_instances if inst.project_id == project_id
             ]
 
             # No compute activity detected — skip (cannot determine accountability gap)
@@ -64,8 +62,7 @@ class CMN003ProjectNoOwnerLabel(BaseCheck):
 
             # Check whether ANY instance carries an accountability label
             has_owner_label = any(
-                _OWNER_LABEL_KEYS & set(inst.labels.keys())
-                for inst in project_instances
+                _OWNER_LABEL_KEYS & set(inst.labels.keys()) for inst in project_instances
             )
 
             if has_owner_label:
@@ -146,6 +143,7 @@ class CMN003ProjectNoOwnerLabel(BaseCheck):
 # CMN-004 — Default Compute Engine SA has user-managed keys
 # ---------------------------------------------------------------------------
 
+
 @CheckRegistry.register
 class CMN004DefaultSAWithActiveKeys(BaseCheck):
     """Default Compute Engine service account has user-managed keys."""
@@ -165,9 +163,7 @@ class CMN004DefaultSAWithActiveKeys(BaseCheck):
             if not sa.email.endswith("@developer.gserviceaccount.com"):
                 continue
 
-            user_managed_keys = [
-                key for key in sa.keys if key.get("keyType") == "USER_MANAGED"
-            ]
+            user_managed_keys = [key for key in sa.keys if key.get("keyType") == "USER_MANAGED"]
 
             if not user_managed_keys:
                 continue
@@ -287,9 +283,7 @@ class CMN005OrgSecurityPoliciesAbsent(BaseCheck):
             if policy.policy:  # non-empty dict means the policy is configured
                 enforced_constraints.add(policy.constraint)
 
-        not_enforced = [
-            c for c in _CRITICAL_CONSTRAINTS if c not in enforced_constraints
-        ]
+        not_enforced = [c for c in _CRITICAL_CONSTRAINTS if c not in enforced_constraints]
 
         # Only raise a finding when 2 or more critical constraints are absent
         if len(not_enforced) < 2:
@@ -381,6 +375,7 @@ class CMN005OrgSecurityPoliciesAbsent(BaseCheck):
 # CMN-006 — Cloud Audit Logs (Data Access) may not be enabled
 # ---------------------------------------------------------------------------
 
+
 @CheckRegistry.register
 class CMN006AuditLogsDisabled(BaseCheck):
     """Cloud Logging API not enabled for projects with active compute workloads."""
@@ -403,9 +398,7 @@ class CMN006AuditLogsDisabled(BaseCheck):
         }
 
         # Build a set of projects that have active compute instances
-        projects_with_compute: set[str] = {
-            inst.project_id for inst in inventory.compute_instances
-        }
+        projects_with_compute: set[str] = {inst.project_id for inst in inventory.compute_instances}
 
         # Flag projects that have compute activity but logging API is absent
         for project_id in projects_with_compute:
@@ -413,9 +406,7 @@ class CMN006AuditLogsDisabled(BaseCheck):
                 continue
 
             project_enabled_apis = [
-                api.service_name
-                for api in inventory.enabled_apis
-                if api.project_id == project_id
+                api.service_name for api in inventory.enabled_apis if api.project_id == project_id
             ]
 
             findings.append(

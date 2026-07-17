@@ -164,9 +164,7 @@ class SARIFReporter:
         """
         # Collect active (FAIL, not suppressed) findings
         active_findings = [
-            f
-            for f in report.findings
-            if f.status == FindingStatus.FAIL and not f.suppressed
+            f for f in report.findings if f.status == FindingStatus.FAIL and not f.suppressed
         ]
 
         # Build rules — one per unique check_id, using the first finding as representative

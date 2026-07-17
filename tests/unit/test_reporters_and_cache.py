@@ -29,6 +29,7 @@ from gcp_abuse_scanner.models.report import (
 # Fixtures
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def _make_finding(
     check_id: str = "CM-001",
     severity: Severity = Severity.HIGH,
@@ -119,6 +120,7 @@ def _make_report(findings: list[Finding] | None = None) -> ScanReport:
 # HTMLReporter
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestHTMLReporter:
     def test_render_returns_html_string(self):
         from gcp_abuse_scanner.reporters.html_reporter import HTMLReporter
@@ -178,10 +180,14 @@ class TestHTMLReporter:
     def test_html_severity_badge_filter(self):
         from gcp_abuse_scanner.reporters.html_reporter import HTMLReporter
 
-        report = _make_report([
-            _make_finding(check_id="CM-001", severity=Severity.CRITICAL),
-            _make_finding(check_id="GEM-001", severity=Severity.MEDIUM, vector=Vector.GEMINI_ABUSE),
-        ])
+        report = _make_report(
+            [
+                _make_finding(check_id="CM-001", severity=Severity.CRITICAL),
+                _make_finding(
+                    check_id="GEM-001", severity=Severity.MEDIUM, vector=Vector.GEMINI_ABUSE
+                ),
+            ]
+        )
         html = HTMLReporter().render(report)
 
         assert "CRITICAL" in html
@@ -209,6 +215,7 @@ class TestHTMLReporter:
 # ─────────────────────────────────────────────────────────────────────────────
 # SARIFReporter
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestSARIFReporter:
     def test_render_returns_valid_json(self):
@@ -345,6 +352,7 @@ class TestSARIFReporter:
 # ─────────────────────────────────────────────────────────────────────────────
 # InventoryCache
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestInventoryCache:
     def test_set_and_get_roundtrip(self, tmp_path):

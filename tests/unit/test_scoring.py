@@ -63,7 +63,9 @@ class TestScoringEngine:
             _make_finding("CM-001", Severity.HIGH, project_id="allowed-project"),
             _make_finding("CM-004", Severity.CRITICAL, project_id="other-project"),
         ]
-        allowlist = [{"check_id": "CM-001", "project_id": "allowed-project", "reason": "Known exception"}]
+        allowlist = [
+            {"check_id": "CM-001", "project_id": "allowed-project", "reason": "Known exception"}
+        ]
         engine = ScoringEngine(allowlist=allowlist)
         result = engine.process(findings)
 
@@ -78,7 +80,9 @@ class TestScoringEngine:
         # Same exploitability, different blast radius
         findings = [
             _make_finding("CM-001", Severity.HIGH, exploitability=7.0, blast_radius="project"),
-            _make_finding("CM-002", Severity.HIGH, exploitability=7.0, blast_radius="billing_account"),
+            _make_finding(
+                "CM-002", Severity.HIGH, exploitability=7.0, blast_radius="billing_account"
+            ),
         ]
         engine = ScoringEngine()
         result = engine.process(findings)
@@ -92,8 +96,7 @@ class TestScoringEngine:
 
     def test_posture_score_decreases_with_critical_findings(self) -> None:
         findings = [
-            _make_finding("CM-004", Severity.CRITICAL, exploitability=9.5)
-            for _ in range(5)
+            _make_finding("CM-004", Severity.CRITICAL, exploitability=9.5) for _ in range(5)
         ]
         engine = ScoringEngine()
         processed = engine.process(findings)

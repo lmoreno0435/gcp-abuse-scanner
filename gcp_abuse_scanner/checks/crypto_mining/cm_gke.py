@@ -147,7 +147,8 @@ class CM021GKENAPNoResourceLimits(BaseCheck):
 
             # Detect NAP via autoprovisioned node pools.
             autoprovisioned_pools = [
-                pool for pool in cluster.node_pools
+                pool
+                for pool in cluster.node_pools
                 if pool.get("autoscaling", {}).get("autoprovisioned", False)
             ]
             if not autoprovisioned_pools:
@@ -227,9 +228,7 @@ class CM023GKEPublicControlPlaneNoAuthorizedNetworks(BaseCheck):
     """GKE cluster with a public control plane and no authorized networks restriction."""
 
     check_id = "CM-023"
-    title = (
-        "GKE cluster has a public control plane endpoint without authorized networks configured"
-    )
+    title = "GKE cluster has a public control plane endpoint without authorized networks configured"
     vector = Vector.CRYPTO_MINING
     severity_base = Severity.HIGH
     required_collectors = ["gke"]
@@ -494,9 +493,7 @@ class CM025LegacyABACEnabled(BaseCheck):
                             "--no-enable-legacy-authorization "
                             "--zone=ZONE",
                         ],
-                        iac_reference=(
-                            "google_container_cluster.enable_legacy_abac"
-                        ),
+                        iac_reference=("google_container_cluster.enable_legacy_abac"),
                         docs=[
                             "https://cloud.google.com/kubernetes-engine/docs/how-to/hardening-your-cluster#leave_abac_disabled_default_for_110",
                         ],

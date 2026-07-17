@@ -204,8 +204,9 @@ class CM004FirewallAdminPortsOpen(BaseCheck):
 
     @staticmethod
     def _is_open_to_internet(rule: object) -> bool:
-        return "0.0.0.0/0" in getattr(rule, "source_ranges", []) or \
-               "::/0" in getattr(rule, "source_ranges", [])
+        return "0.0.0.0/0" in getattr(rule, "source_ranges", []) or "::/0" in getattr(
+            rule, "source_ranges", []
+        )
 
     @staticmethod
     def _exposed_admin_ports(rule: object) -> list[str]:
@@ -300,9 +301,7 @@ class CM009ShieldedVMDisabled(BaseCheck):
                             f"gcloud compute instances start {instance.name} --zone={instance.zone}",
                         ],
                         iac_reference="google_compute_instance.shielded_instance_config",
-                        docs=[
-                            "https://cloud.google.com/compute/shielded-vm/docs/shielded-vm"
-                        ],
+                        docs=["https://cloud.google.com/compute/shielded-vm/docs/shielded-vm"],
                         effort=RemediationEffort.LOW,
                     ),
                     references=self.references,

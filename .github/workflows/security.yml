@@ -46,10 +46,10 @@ jobs:
           python-version: "3.11"
 
       - name: Install bandit
-        run: pip install bandit[toml]
+        run: pip install bandit[toml] bandit-sarif-formatter
 
       - name: Run bandit
-        run: bandit -r gcp_abuse_scanner/ -c pyproject.toml -f sarif -o bandit.sarif; echo "bandit_exit=$?" >> "$GITHUB_ENV" || true
+        run: bandit -r gcp_abuse_scanner/ -c pyproject.toml -f sarif -o bandit.sarif --exit-zero
 
       - name: Upload SARIF results
         uses: github/codeql-action/upload-sarif@v4

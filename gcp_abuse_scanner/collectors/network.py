@@ -28,6 +28,7 @@ class NetworkCollector(BaseCollector):
 
         try:
             import googleapiclient.discovery
+
             compute = googleapiclient.discovery.build("compute", "v1", credentials=creds)
         except Exception as exc:
             logger.error("Failed to build Compute client for network: %s", exc)

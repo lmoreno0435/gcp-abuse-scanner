@@ -45,12 +45,16 @@ class ConsoleReporter:
         self._console.print()
         self._console.print(
             Panel(
-                f"[bold cyan]gcp-abuse-scanner[/] v{meta.tool_version}\n"
-                f"Scan ID: [dim]{meta.scan_id}[/]\n"
-                f"Scope: [bold]{meta.scope_type}[/] — "
-                f"{'org ' + meta.organization_id if meta.organization_id else ', '.join(meta.project_ids[:3]) + ('...' if len(meta.project_ids) > 3 else '')}\n"
-                f"Identity: [dim]{meta.service_account or 'ADC'}[/]\n"
-                f"Duration: {meta.duration_seconds:.1f}s" if meta.duration_seconds else "",
+                (
+                    f"[bold cyan]gcp-abuse-scanner[/] v{meta.tool_version}\n"
+                    f"Scan ID: [dim]{meta.scan_id}[/]\n"
+                    f"Scope: [bold]{meta.scope_type}[/] — "
+                    f"{'org ' + meta.organization_id if meta.organization_id else ', '.join(meta.project_ids[:3]) + ('...' if len(meta.project_ids) > 3 else '')}\n"
+                    f"Identity: [dim]{meta.service_account or 'ADC'}[/]\n"
+                    f"Duration: {meta.duration_seconds:.1f}s"
+                    if meta.duration_seconds
+                    else ""
+                ),
                 title="[bold]GCP Security Scan Report[/]",
                 border_style="cyan",
             )
@@ -119,7 +123,11 @@ class ConsoleReporter:
         self._console.print(table)
 
     def _render_remediation_plan(self, report: ScanReport) -> None:
-        findings = [f for f in report.prioritized_findings() if f.severity in (Severity.CRITICAL, Severity.HIGH)]
+        findings = [
+            f
+            for f in report.prioritized_findings()
+            if f.severity in (Severity.CRITICAL, Severity.HIGH)
+        ]
         if not findings:
             return
 

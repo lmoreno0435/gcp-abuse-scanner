@@ -54,10 +54,7 @@ def _make_id(check_id: str, project_id: str, key: str) -> str:
 
 def _is_broad_member(member: str) -> bool:
     """Return True if the member represents a wide/public principal."""
-    return (
-        member in ("allUsers", "allAuthenticatedUsers")
-        or member.startswith("domain:")
-    )
+    return member in ("allUsers", "allAuthenticatedUsers") or member.startswith("domain:")
 
 
 # ---------------------------------------------------------------------------
@@ -182,9 +179,7 @@ class CM042BroadServiceAccountActAs(BaseCheck):
     """
 
     check_id = "CM-042"
-    title = (
-        "iam.serviceAccountTokenCreator or serviceAccountUser granted broadly"
-    )
+    title = "iam.serviceAccountTokenCreator or serviceAccountUser granted broadly"
     vector = Vector.CRYPTO_MINING
     severity_base = Severity.HIGH
     required_collectors = ["iam"]
@@ -197,10 +192,7 @@ class CM042BroadServiceAccountActAs(BaseCheck):
             if binding.role not in _ACT_AS_ROLES:
                 continue
 
-            broad_members = [
-                m for m in binding.members
-                if self._is_broadly_granted(m)
-            ]
+            broad_members = [m for m in binding.members if self._is_broadly_granted(m)]
             if not broad_members:
                 continue
 
@@ -292,9 +284,7 @@ class CM045RecommenderOverpermissionedSA(BaseCheck):
     """
 
     check_id = "CM-045"
-    title = (
-        "IAM Recommender identifies service account with unused compute permissions"
-    )
+    title = "IAM Recommender identifies service account with unused compute permissions"
     vector = Vector.CRYPTO_MINING
     severity_base = Severity.MEDIUM
     required_collectors = ["recommender"]
@@ -340,7 +330,7 @@ class CM045RecommenderOverpermissionedSA(BaseCheck):
                     },
                     description=(
                         f"IAM Recommender has flagged a '{recommender_subtype}' recommendation "
-                        f"involving compute-related permissions: \"{description}\". "
+                        f'involving compute-related permissions: "{description}". '
                         "Over-permissioned service accounts with unused compute roles represent "
                         "a standing risk — if compromised, they can be used to provision "
                         "resources for crypto mining without triggering immediate alerts."
@@ -392,10 +382,12 @@ class CM045RecommenderOverpermissionedSA(BaseCheck):
             return False
 
         # Check description and content for compute-related role keywords
-        haystack = " ".join([
-            insight.get("description", ""),
-            str(insight.get("content", "")),
-        ]).lower()
+        haystack = " ".join(
+            [
+                insight.get("description", ""),
+                str(insight.get("content", "")),
+            ]
+        ).lower()
 
         return any(kw in haystack for kw in _COMPUTE_ROLE_KEYWORDS)
 
@@ -430,14 +422,9 @@ class CM050NoEgressRestriction(BaseCheck):
             rules_by_project[rule.project_id].append(rule)
 
         for project_id, rules in rules_by_project.items():
-            egress_rules = [
-                r for r in rules
-                if r.direction == "EGRESS" and not r.disabled
-            ]
+            egress_rules = [r for r in rules if r.direction == "EGRESS" and not r.disabled]
 
-            has_deny_all_egress = any(
-                self._is_deny_all_egress(r) for r in egress_rules
-            )
+            has_deny_all_egress = any(self._is_deny_all_egress(r) for r in egress_rules)
             if has_deny_all_egress:
                 continue
 

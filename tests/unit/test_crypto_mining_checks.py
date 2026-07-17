@@ -37,6 +37,7 @@ def clean_inventory() -> ResourceInventory:
 
 # --- CM-001 ---
 
+
 class TestCM001ExternalIP:
     def test_fail_when_vm_has_external_ip(self, crypto_inventory: ResourceInventory) -> None:
         check = CM001ExternalIP()
@@ -54,6 +55,7 @@ class TestCM001ExternalIP:
 
 
 # --- CM-004 ---
+
 
 class TestCM004FirewallAdminPorts:
     def test_fail_when_ssh_open_to_internet(self, crypto_inventory: ResourceInventory) -> None:
@@ -79,6 +81,7 @@ class TestCM004FirewallAdminPorts:
 
 # --- CM-009 ---
 
+
 class TestCM009ShieldedVM:
     def test_fail_when_shielded_vm_disabled(self, crypto_inventory: ResourceInventory) -> None:
         check = CM009ShieldedVMDisabled()
@@ -101,6 +104,7 @@ class TestCM009ShieldedVM:
 
 # --- CM-043 ---
 
+
 class TestCM043PublicIAMBinding:
     def test_pass_when_no_public_bindings(self, crypto_inventory: ResourceInventory) -> None:
         check = CM043PublicIAMBinding()
@@ -109,6 +113,7 @@ class TestCM043PublicIAMBinding:
 
     def test_fail_when_all_users_binding(self, crypto_inventory: ResourceInventory) -> None:
         from gcp_abuse_scanner.models.inventory import IAMBinding
+
         crypto_inventory.iam_bindings.append(
             IAMBinding(
                 resource="//cloudresourcemanager.googleapis.com/projects/test-project-001",
@@ -126,6 +131,7 @@ class TestCM043PublicIAMBinding:
 
 # --- CM-044 ---
 
+
 class TestCM044DefaultComputeSAEditor:
     def test_fail_when_default_sa_has_editor(self, crypto_inventory: ResourceInventory) -> None:
         check = CM044DefaultComputeSAEditor()
@@ -141,6 +147,7 @@ class TestCM044DefaultComputeSAEditor:
 
 
 # --- CM-041 ---
+
 
 class TestCM041SAUserManagedKeys:
     def test_fail_when_user_managed_keys_exist(self, crypto_inventory: ResourceInventory) -> None:

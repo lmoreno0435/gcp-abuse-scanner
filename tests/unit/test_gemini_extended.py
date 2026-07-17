@@ -193,9 +193,7 @@ class TestGEM006APIKeyNoReferrerRestriction:
                 display_name="Gemini With Referrer",
                 restrictions={
                     "apiTargets": [{"service": "generativelanguage.googleapis.com"}],
-                    "browserKeyRestrictions": {
-                        "allowedReferrers": ["https://example.com/*"]
-                    },
+                    "browserKeyRestrictions": {"allowedReferrers": ["https://example.com/*"]},
                 },
                 uid="uid-gem-ref",
             )
@@ -387,7 +385,10 @@ class TestGEM023BroadVertexPredictAccess:
                 resource_type="cloudresourcemanager.googleapis.com/Project",
                 project_id="test-project",
                 role="roles/aiplatform.user",
-                members=["domain:example.com", "serviceAccount:specific@test-project.iam.gserviceaccount.com"],
+                members=[
+                    "domain:example.com",
+                    "serviceAccount:specific@test-project.iam.gserviceaccount.com",
+                ],
             )
         )
         check = GEM023BroadVertexPredictAccess()
@@ -397,9 +398,7 @@ class TestGEM023BroadVertexPredictAccess:
         assert findings[0].status == FindingStatus.FAIL
         assert "domain:example.com" in findings[0].evidence["broad_members"]
 
-    def test_pass_when_aiplatform_user_restricted(
-        self, empty_inventory: ResourceInventory
-    ) -> None:
+    def test_pass_when_aiplatform_user_restricted(self, empty_inventory: ResourceInventory) -> None:
         empty_inventory.iam_bindings.append(
             IAMBinding(
                 resource="//cloudresourcemanager.googleapis.com/projects/test-project",
@@ -493,7 +492,7 @@ class TestGEM040VertexAIQuotaAtDefault:
                 "limit_name": "ONLINE-PREDICTION-REQUESTS-per-minute",
                 "quota_buckets": [
                     {
-                        "effectiveLimit": 10,   # reduced from default
+                        "effectiveLimit": 10,  # reduced from default
                         "defaultLimit": 600,
                     }
                 ],
@@ -561,9 +560,7 @@ class TestGEM051NoBudgetForVertexAI:
                 name="billingAccounts/ACCT/budgets/compute-budget",
                 billing_account_id="ACCT",
                 display_name="Compute Budget",
-                budget_filter={
-                    "services": ["services/compute.googleapis.com"]
-                },
+                budget_filter={"services": ["services/compute.googleapis.com"]},
             )
         )
         check = GEM051NoBudgetForVertexAI()
@@ -581,9 +578,7 @@ class TestGEM051NoBudgetForVertexAI:
                 name="billingAccounts/ACCT/budgets/vertex-budget",
                 billing_account_id="ACCT",
                 display_name="Vertex AI Budget",
-                budget_filter={
-                    "services": ["services/aiplatform.googleapis.com"]
-                },
+                budget_filter={"services": ["services/aiplatform.googleapis.com"]},
             )
         )
         check = GEM051NoBudgetForVertexAI()
@@ -617,9 +612,7 @@ class TestCMN003ProjectNoOwnerLabel:
         assert findings[0].status == FindingStatus.FAIL
         assert findings[0].evidence["instance_count"] == 1
 
-    def test_pass_when_instances_have_owner_label(
-        self, empty_inventory: ResourceInventory
-    ) -> None:
+    def test_pass_when_instances_have_owner_label(self, empty_inventory: ResourceInventory) -> None:
         empty_inventory.compute_instances.append(
             ComputeInstance(
                 name="instance-with-label",
@@ -741,9 +734,7 @@ class TestCMN005OrgSecurityPoliciesAbsent:
 
 
 class TestCMN006AuditLogsDisabled:
-    def test_fail_when_logging_api_not_enabled(
-        self, empty_inventory: ResourceInventory
-    ) -> None:
+    def test_fail_when_logging_api_not_enabled(self, empty_inventory: ResourceInventory) -> None:
         # Project has compute instances but logging API is absent
         empty_inventory.compute_instances.append(
             ComputeInstance(
