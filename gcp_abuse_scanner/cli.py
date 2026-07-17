@@ -17,7 +17,10 @@ import uuid
 from datetime import UTC, datetime
 from enum import Enum
 from pathlib import Path
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
+
+if TYPE_CHECKING:
+    from gcp_abuse_scanner.models.report import ScanReport
 
 import typer
 from rich.console import Console

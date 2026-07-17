@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from gcp_abuse_scanner.collectors.base import BaseCollector
 from gcp_abuse_scanner.models.inventory import CloudRunService, ResourceInventory
@@ -50,7 +50,7 @@ class CloudRunCollector(BaseCollector):
                     }
                 )
 
-    def _collect_services(self, run: object, inventory: ResourceInventory, project_id: str) -> None:
+    def _collect_services(self, run: Any, inventory: ResourceInventory, project_id: str) -> None:
         # List services across all regions using '-'
         parent = f"projects/{project_id}/locations/-"
         request = run.projects().locations().services().list(parent=parent)  # type: ignore
@@ -87,7 +87,7 @@ class CloudRunCollector(BaseCollector):
             )
 
     @staticmethod
-    def _get_service_iam(run: object, resource_name: str) -> list[dict]:
+    def _get_service_iam(run: Any, resource_name: str) -> list[dict[str, Any]]:
         """Fetch IAM policy for a Cloud Run service."""
         try:
             policy = (
