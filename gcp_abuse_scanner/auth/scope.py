@@ -5,8 +5,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from google.cloud import asset_v1
-from google.cloud import resourcemanager_v3
+from google.cloud import asset_v1, resourcemanager_v3
 
 if TYPE_CHECKING:
     from gcp_abuse_scanner.auth.manager import AuthManager
@@ -23,7 +22,7 @@ class ScopeResolver:
     - Project list scope: validates each project_id and returns as-is.
     """
 
-    def __init__(self, auth_manager: "AuthManager") -> None:
+    def __init__(self, auth_manager: AuthManager) -> None:
         self._auth = auth_manager
 
     def resolve_projects(

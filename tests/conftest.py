@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -25,7 +25,6 @@ from gcp_abuse_scanner.models.report import (
     SeveritySummary,
     VectorSummary,
 )
-
 
 # ─── Finding factories ────────────────────────────────────────────────────────
 
@@ -101,8 +100,8 @@ def make_report(make_finding):
         return ScanReport(
             metadata=ScanMetadata(
                 scan_id="test-scan-abcd1234",
-                started_at=datetime(2026, 7, 17, 12, 0, 0, tzinfo=timezone.utc),
-                finished_at=datetime(2026, 7, 17, 12, 1, 30, tzinfo=timezone.utc),
+                started_at=datetime(2026, 7, 17, 12, 0, 0, tzinfo=UTC),
+                finished_at=datetime(2026, 7, 17, 12, 1, 30, tzinfo=UTC),
                 duration_seconds=90.0,
                 scope_type="project_list",
                 organization_id="123456789",

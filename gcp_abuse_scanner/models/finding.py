@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 
@@ -86,12 +86,12 @@ class Finding(BaseModel):
 
     # Metadata
     references: list[str] = Field(default_factory=list)
-    first_detected: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    first_detected: datetime = Field(default_factory=lambda: datetime.now(UTC))
     suppressed: bool = False
     suppression_reason: str | None = None
 
     @model_validator(mode="after")
-    def validate_finding_id(self) -> "Finding":
+    def validate_finding_id(self) -> Finding:
         if not self.finding_id:
             raise ValueError("finding_id must not be empty")
         return self

@@ -84,7 +84,12 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]
-ignore = ["E501"]
+ignore = [
+  "E501",    # line too long — handled by black
+  "UP042",   # StrEnum migration — keep str+Enum for broader compatibility
+  "F821",    # false positive on lazy imports inside functions
+  "N812",    # __version__ aliased as _TOOL_VERSION — intentional naming
+]
 
 [tool.black]
 line-length = 100

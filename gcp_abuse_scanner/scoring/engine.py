@@ -7,7 +7,6 @@ from typing import Any
 
 from gcp_abuse_scanner.models.finding import Finding, Severity
 from gcp_abuse_scanner.models.report import (
-    CoverageReport,
     ExecutiveSummary,
     SeveritySummary,
     VectorSummary,
@@ -141,6 +140,7 @@ class ScoringEngine:
     @staticmethod
     def _count_by_vector(findings: list[Finding]) -> list[VectorSummary]:
         from collections import defaultdict
+
         from gcp_abuse_scanner.models.finding import Vector
 
         vector_findings: dict[str, list[Finding]] = defaultdict(list)

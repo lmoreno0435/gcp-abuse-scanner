@@ -7,7 +7,7 @@ import hashlib
 import json
 import logging
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from gcp_abuse_scanner.models.inventory import ResourceInventory
@@ -112,7 +112,7 @@ class InventoryCache:
         key = self._cache_key(project_ids, organization_id)
         path = self._cache_path(key)
 
-        cached_at = datetime.now(tz=timezone.utc).isoformat()
+        cached_at = datetime.now(tz=UTC).isoformat()
         payload = {
             "cached_at": cached_at,
             "ttl_seconds": self._ttl_seconds,

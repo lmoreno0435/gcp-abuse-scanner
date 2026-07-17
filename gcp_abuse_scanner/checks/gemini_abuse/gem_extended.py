@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import hashlib
 from collections import defaultdict
-from datetime import datetime, timezone, timedelta
+from datetime import UTC, datetime, timedelta
 
 from gcp_abuse_scanner.checks.base import BaseCheck, CheckRegistry
 from gcp_abuse_scanner.models.finding import (
@@ -104,7 +104,7 @@ class GEM004APIKeyNoRotation(BaseCheck):
 
     def evaluate(self, inventory: ResourceInventory) -> list[Finding]:
         findings: list[Finding] = []
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         cutoff = now - timedelta(days=_KEY_MAX_AGE_DAYS)
 
         for key in inventory.api_keys:
@@ -154,8 +154,8 @@ class GEM004APIKeyNoRotation(BaseCheck):
                     ),
                     remediation=Remediation(
                         summary=(
-                            f"Rotate this API key. Create a new key, update all consumers, "
-                            f"then delete the old key."
+                            "Rotate this API key. Create a new key, update all consumers, "
+                            "then delete the old key."
                         ),
                         steps=[
                             "Create a replacement API key with the same restrictions.",

@@ -31,9 +31,9 @@ class CollectorEngine:
 
     def __init__(
         self,
-        auth_manager: "AuthManager",
+        auth_manager: AuthManager,
         max_workers: int = _MAX_WORKERS,
-        cache: "InventoryCache | None" = None,
+        cache: InventoryCache | None = None,
     ) -> None:
         self._auth = auth_manager
         self._max_workers = max_workers
@@ -144,7 +144,7 @@ class CollectorEngine:
 
     @staticmethod
     def _run_collector(
-        collector: "BaseCollector",
+        collector: BaseCollector,
         inventory: ResourceInventory,
         project_ids: list[str],
         org: str | None,

@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from gcp_abuse_scanner.models.finding import (
     Finding,
     FindingStatus,

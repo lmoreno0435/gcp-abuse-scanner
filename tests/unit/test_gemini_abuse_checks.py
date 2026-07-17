@@ -16,7 +16,7 @@ from gcp_abuse_scanner.checks.gemini_abuse.gem_iam import (
     GEM020BroadVertexIAM,
     GEM021PublicVertexBinding,
 )
-from gcp_abuse_scanner.models.finding import FindingStatus, Severity
+from gcp_abuse_scanner.models.finding import Severity
 from gcp_abuse_scanner.models.inventory import ResourceInventory
 
 FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"

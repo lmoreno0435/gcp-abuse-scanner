@@ -15,6 +15,7 @@ _SARIF_VERSION = "2.1.0"
 _TOOL_NAME = "gcp-abuse-scanner"
 
 from gcp_abuse_scanner import __version__ as _TOOL_VERSION  # noqa: E402
+
 _INFORMATION_URI = "https://github.com/lmoreno0435/gcp-abuse-scanner"
 _HELP_URI_BASE = "https://github.com/lmoreno0435/gcp-abuse-scanner/blob/main/docs/checks/"
 

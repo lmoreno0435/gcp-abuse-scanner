@@ -23,7 +23,7 @@ from gcp_abuse_scanner.models.finding import (
     Severity,
     Vector,
 )
-from gcp_abuse_scanner.models.inventory import GKECluster, ResourceInventory
+from gcp_abuse_scanner.models.inventory import ResourceInventory
 
 
 def _make_id(check_id: str, project_id: str, resource: str) -> str:

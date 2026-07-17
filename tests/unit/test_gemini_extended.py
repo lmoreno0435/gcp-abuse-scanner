@@ -2,10 +2,16 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
+from gcp_abuse_scanner.checks.common.cmn_extended import (
+    CMN003ProjectNoOwnerLabel,
+    CMN004DefaultSAWithActiveKeys,
+    CMN005OrgSecurityPoliciesAbsent,
+    CMN006AuditLogsDisabled,
+)
 from gcp_abuse_scanner.checks.gemini_abuse.gem_extended import (
     GEM004APIKeyNoRotation,
     GEM005OrphanAPIKeys,
@@ -19,12 +25,6 @@ from gcp_abuse_scanner.checks.gemini_abuse.gem_extended import (
     GEM050NoAPIKeyCreationRestriction,
     GEM051NoBudgetForVertexAI,
 )
-from gcp_abuse_scanner.checks.common.cmn_extended import (
-    CMN003ProjectNoOwnerLabel,
-    CMN004DefaultSAWithActiveKeys,
-    CMN005OrgSecurityPoliciesAbsent,
-    CMN006AuditLogsDisabled,
-)
 from gcp_abuse_scanner.models.finding import FindingStatus, Severity
 from gcp_abuse_scanner.models.inventory import (
     APIKey,
@@ -37,7 +37,6 @@ from gcp_abuse_scanner.models.inventory import (
     ServiceAccountInfo,
     VertexAIEndpoint,
 )
-
 
 # ---------------------------------------------------------------------------
 # Shared fixtures
@@ -64,7 +63,7 @@ def empty_inventory_with_org() -> ResourceInventory:
 
 class TestGEM004APIKeyNoRotation:
     def test_fail_when_key_older_than_90_days(self, empty_inventory: ResourceInventory) -> None:
-        old_time = datetime.now(timezone.utc) - timedelta(days=100)
+        old_time = datetime.now(UTC) - timedelta(days=100)
         empty_inventory.api_keys.append(
             APIKey(
                 name="projects/test-project/locations/global/keys/old-key",
@@ -83,7 +82,7 @@ class TestGEM004APIKeyNoRotation:
         assert findings[0].evidence["age_days"] >= 100
 
     def test_pass_when_key_recent(self, empty_inventory: ResourceInventory) -> None:
-        recent_time = datetime.now(timezone.utc) - timedelta(days=10)
+        recent_time = datetime.now(UTC) - timedelta(days=10)
         empty_inventory.api_keys.append(
             APIKey(
                 name="projects/test-project/locations/global/keys/recent-key",

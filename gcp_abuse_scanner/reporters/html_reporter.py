@@ -34,7 +34,6 @@ def _severity_badge(severity: str | Severity) -> str:
     """Return an inline HTML badge for the given severity."""
     color = _severity_color(severity)
     label = severity.value if isinstance(severity, Severity) else str(severity)
-    bg = color + "1a"  # ~10% opacity hex approximation via CSS rgba
     return (
         f'<span style="'
         f"display:inline-block;"

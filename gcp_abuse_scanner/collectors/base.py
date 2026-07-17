@@ -35,14 +35,14 @@ class BaseCollector(abc.ABC):
     name: str  # e.g. "compute", "iam"
     required_apis: list[str] = []
 
-    def __init__(self, auth_manager: "AuthManager") -> None:
+    def __init__(self, auth_manager: AuthManager) -> None:
         self._auth = auth_manager
         self._logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     @abc.abstractmethod
     def collect(
         self,
-        inventory: "ResourceInventory",
+        inventory: ResourceInventory,
         project_ids: list[str],
         organization_id: str | None = None,
     ) -> None:
@@ -51,7 +51,7 @@ class BaseCollector(abc.ABC):
         Modifies inventory in-place.
         """
 
-    def is_api_enabled(self, inventory: "ResourceInventory", project_id: str) -> bool:
+    def is_api_enabled(self, inventory: ResourceInventory, project_id: str) -> bool:
         if not self.required_apis:
             return True
         enabled = {

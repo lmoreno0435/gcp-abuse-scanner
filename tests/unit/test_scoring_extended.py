@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from gcp_abuse_scanner.models.finding import (
     Finding,
     FindingStatus,
@@ -14,7 +12,6 @@ from gcp_abuse_scanner.models.finding import (
     Vector,
 )
 from gcp_abuse_scanner.scoring.engine import ScoringEngine
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Helpers

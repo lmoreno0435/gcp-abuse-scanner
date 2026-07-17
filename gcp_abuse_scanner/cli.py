@@ -13,12 +13,11 @@ Usage:
 from __future__ import annotations
 
 import logging
-import sys
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated
 
 import typer
 from rich.console import Console
@@ -59,19 +58,19 @@ def _setup_logging(verbose: bool) -> None:
 @app.command()
 def scan(
     org: Annotated[
-        Optional[str],
+        str | None,
         typer.Option("--org", "-o", help="GCP Organization ID (digits only). Scans all projects."),
     ] = None,
     project: Annotated[
-        Optional[list[str]],
+        list[str] | None,
         typer.Option("--project", "-p", help="GCP Project ID. Repeatable for multiple projects."),
     ] = None,
     exclude_project: Annotated[
-        Optional[list[str]],
+        list[str] | None,
         typer.Option("--exclude-project", help="Project IDs to exclude from scan."),
     ] = None,
     service_account_key: Annotated[
-        Optional[str],
+        str | None,
         typer.Option(
             "--service-account-key",
             envvar="GOOGLE_APPLICATION_CREDENTIALS",
@@ -79,7 +78,7 @@ def scan(
         ),
     ] = None,
     impersonate_service_account: Annotated[
-        Optional[str],
+        str | None,
         typer.Option(
             "--impersonate-service-account",
             help="Service account email to impersonate (recommended over key files).",
@@ -90,18 +89,18 @@ def scan(
         typer.Option("--format", "-f", help="Output format."),
     ] = OutputFormat.console,
     output: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option("--output", help="Output file path (default: stdout / auto-named)."),
     ] = None,
     vector: Annotated[
-        Optional[list[str]],
+        list[str] | None,
         typer.Option(
             "--vector",
             help="Limit scan to specific vectors: crypto_mining, gemini_abuse, common.",
         ),
     ] = None,
     allowlist_file: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option("--allowlist", help="YAML file with suppression rules."),
     ] = None,
     verbose: Annotated[bool, typer.Option("--verbose", "-v", help="Enable debug logging.")] = False,
@@ -135,12 +134,11 @@ def scan(
     # Lazy imports to keep startup fast
     from gcp_abuse_scanner.auth import AuthManager, ScopeResolver
     from gcp_abuse_scanner.checks import CheckRegistry
-    from gcp_abuse_scanner.models.report import ScanMetadata, ScanReport, CoverageReport
+    from gcp_abuse_scanner.models.report import CoverageReport, ScanMetadata, ScanReport
     from gcp_abuse_scanner.scoring import ScoringEngine
-    from gcp_abuse_scanner.reporters import ConsoleReporter, JSONReporter, MarkdownReporter
 
     scan_id = str(uuid.uuid4())
-    started_at = datetime.now(timezone.utc)
+    started_at = datetime.now(UTC)
 
     console.print(f"[cyan]Starting scan[/] (id: [dim]{scan_id}[/])")
 
@@ -182,8 +180,8 @@ def scan(
 
     # Collect inventory (with optional cache)
     console.print("[cyan]Collecting resource inventory...[/]")
-    from gcp_abuse_scanner.collectors.engine import CollectorEngine
     from gcp_abuse_scanner.collectors.cache import InventoryCache
+    from gcp_abuse_scanner.collectors.engine import CollectorEngine
 
     cache = InventoryCache(ttl_seconds=cache_ttl) if use_cache else None
     if cache and cache.is_valid(project_ids, org):
@@ -223,7 +221,7 @@ def scan(
     all_findings = scoring.process(all_findings)
     executive_summary = scoring.build_executive_summary(all_findings, max_projects=len(project_ids))
 
-    finished_at = datetime.now(timezone.utc)
+    finished_at = datetime.now(UTC)
     duration = (finished_at - started_at).total_seconds()
 
     # Build report
@@ -273,7 +271,11 @@ def scan(
 
 def _write_output(report: ScanReport, format: OutputFormat, output: Path | None) -> None:
     from gcp_abuse_scanner.reporters import (
-        ConsoleReporter, JSONReporter, MarkdownReporter, HTMLReporter, SARIFReporter
+        ConsoleReporter,
+        HTMLReporter,
+        JSONReporter,
+        MarkdownReporter,
+        SARIFReporter,
     )
 
     scan_prefix = f"gcp-scan-{report.metadata.scan_id[:8]}"
@@ -309,14 +311,15 @@ def _write_output(report: ScanReport, format: OutputFormat, output: Path | None)
 @app.command(name="list-checks")
 def list_checks(
     vector: Annotated[
-        Optional[str],
+        str | None,
         typer.Option("--vector", help="Filter by vector: crypto_mining, gemini_abuse, common."),
     ] = None,
 ) -> None:
     """List all available security checks."""
-    from gcp_abuse_scanner.checks import CheckRegistry
-    from rich.table import Table
     from rich import box
+    from rich.table import Table
+
+    from gcp_abuse_scanner.checks import CheckRegistry
 
     checks = CheckRegistry.list_metadata()
     if vector:

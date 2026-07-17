@@ -4,17 +4,10 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from gcp_abuse_scanner.models.inventory import (
     EnabledAPI,
-    GKECluster,
-    CloudRunService,
-    OrgPolicy,
     ResourceInventory,
-    VertexAIEndpoint,
 )
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Helpers

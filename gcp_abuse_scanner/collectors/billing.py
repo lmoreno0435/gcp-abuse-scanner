@@ -9,7 +9,7 @@ from gcp_abuse_scanner.collectors.base import BaseCollector
 from gcp_abuse_scanner.models.inventory import BudgetInfo, ProjectInfo, ResourceInventory
 
 if TYPE_CHECKING:
-    from gcp_abuse_scanner.auth.manager import AuthManager
+    pass
 
 logger = logging.getLogger(__name__)
 

@@ -3,14 +3,11 @@
 from __future__ import annotations
 
 import json
-import tempfile
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from gcp_abuse_scanner.auth.manager import AuthError, AuthManager
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # AuthManager — identity property

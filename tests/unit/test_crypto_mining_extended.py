@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-import pytest
-
+from gcp_abuse_scanner.checks.crypto_mining.cm_cloudrun import (
+    CM030CloudRunPublicInvoker,
+    CM031CloudRunUnboundedMaxScale,
+)
 from gcp_abuse_scanner.checks.crypto_mining.cm_compute_extended import (
     CM002OrgPolicyExternalIPNotRestricted,
     CM003FirewallEgressPermissive,
@@ -19,10 +21,6 @@ from gcp_abuse_scanner.checks.crypto_mining.cm_gke import (
     CM024WorkloadIdentityDisabled,
     CM025LegacyABACEnabled,
     CM026NodePoolDefaultComputeSA,
-)
-from gcp_abuse_scanner.checks.crypto_mining.cm_cloudrun import (
-    CM030CloudRunPublicInvoker,
-    CM031CloudRunUnboundedMaxScale,
 )
 from gcp_abuse_scanner.checks.crypto_mining.cm_iam_extended import (
     CM040BroadComputeCreationRoles,
@@ -42,7 +40,6 @@ from gcp_abuse_scanner.models.inventory import (
     OrgPolicy,
     ResourceInventory,
 )
-
 
 # ---------------------------------------------------------------------------
 # CM-002: Org Policy compute.vmExternalIpAccess

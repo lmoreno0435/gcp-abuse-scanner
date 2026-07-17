@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+from datetime import UTC
 from unittest.mock import MagicMock, patch
 
-import pytest
 from typer.testing import CliRunner
 
 from gcp_abuse_scanner.cli import app
@@ -20,13 +19,22 @@ runner = CliRunner()
 
 def _make_mock_report(has_critical: bool = False, finding_count: int = 1):
     """Build a minimal mock ScanReport."""
-    from datetime import datetime, timezone
-    from gcp_abuse_scanner.models.report import (
-        ScanReport, ScanMetadata, ExecutiveSummary, CoverageReport,
-        SeveritySummary, VectorSummary,
-    )
+    from datetime import datetime
+
     from gcp_abuse_scanner.models.finding import (
-        Finding, GCPResource, Remediation, RemediationEffort, Vector,
+        Finding,
+        GCPResource,
+        Remediation,
+        RemediationEffort,
+        Vector,
+    )
+    from gcp_abuse_scanner.models.report import (
+        CoverageReport,
+        ExecutiveSummary,
+        ScanMetadata,
+        ScanReport,
+        SeveritySummary,
+        VectorSummary,
     )
 
     sev = Severity.CRITICAL if has_critical else Severity.HIGH
@@ -61,8 +69,8 @@ def _make_mock_report(has_critical: bool = False, finding_count: int = 1):
     return ScanReport(
         metadata=ScanMetadata(
             scan_id="abcd1234-0000-0000-0000-000000000000",
-            started_at=datetime(2026, 7, 17, 12, 0, 0, tzinfo=timezone.utc),
-            finished_at=datetime(2026, 7, 17, 12, 1, 0, tzinfo=timezone.utc),
+            started_at=datetime(2026, 7, 17, 12, 0, 0, tzinfo=UTC),
+            finished_at=datetime(2026, 7, 17, 12, 1, 0, tzinfo=UTC),
             duration_seconds=60.0,
             scope_type="project_list",
             organization_id=None,

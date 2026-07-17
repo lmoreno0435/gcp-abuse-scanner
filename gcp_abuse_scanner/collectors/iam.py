@@ -11,7 +11,7 @@ from gcp_abuse_scanner.collectors.base import BaseCollector
 from gcp_abuse_scanner.models.inventory import IAMBinding, ResourceInventory, ServiceAccountInfo
 
 if TYPE_CHECKING:
-    from gcp_abuse_scanner.auth.manager import AuthManager
+    pass
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +64,6 @@ class IAMCollector(BaseCollector):
     def _collect_service_accounts(
         self, inventory: ResourceInventory, project_ids: list[str], creds: object
     ) -> None:
-        import google.auth.transport.requests
         import googleapiclient.discovery
 
         try:

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -14,7 +14,7 @@ class ScanMetadata(BaseModel):
     tool_name: str = "gcp-abuse-scanner"
     tool_version: str = "0.1.0"
     scan_id: str
-    started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    started_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     finished_at: datetime | None = None
     duration_seconds: float | None = None
     scope_type: str = Field(description="organization | project_list")

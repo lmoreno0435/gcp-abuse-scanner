@@ -10,7 +10,6 @@ GEM-004: API key without rotation (long-lived)
 from __future__ import annotations
 
 import hashlib
-from datetime import datetime, timezone
 
 from gcp_abuse_scanner.checks.base import BaseCheck, CheckRegistry
 from gcp_abuse_scanner.models.finding import (

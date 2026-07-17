@@ -4,13 +4,7 @@ from __future__ import annotations
 
 import gzip
 import json
-import tempfile
-import time
-from datetime import datetime, timezone
-from pathlib import Path
-from unittest.mock import patch
-
-import pytest
+from datetime import UTC, datetime
 
 from gcp_abuse_scanner.models.finding import (
     Finding,
@@ -30,7 +24,6 @@ from gcp_abuse_scanner.models.report import (
     SeveritySummary,
     VectorSummary,
 )
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Fixtures
@@ -88,8 +81,8 @@ def _make_report(findings: list[Finding] | None = None) -> ScanReport:
     return ScanReport(
         metadata=ScanMetadata(
             scan_id="test-scan-1234",
-            started_at=datetime(2026, 7, 17, 12, 0, 0, tzinfo=timezone.utc),
-            finished_at=datetime(2026, 7, 17, 12, 1, 30, tzinfo=timezone.utc),
+            started_at=datetime(2026, 7, 17, 12, 0, 0, tzinfo=UTC),
+            finished_at=datetime(2026, 7, 17, 12, 1, 30, tzinfo=UTC),
             duration_seconds=90.0,
             scope_type="project_list",
             organization_id="123456789",
