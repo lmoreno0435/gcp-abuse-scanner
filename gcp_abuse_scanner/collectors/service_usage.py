@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 from google.cloud import service_usage_v1
 
-from gcp_abuse_scanner.collectors.base import BaseCollector
+from gcp_abuse_scanner.collectors.base import BaseCollector, _fmt_exc
 from gcp_abuse_scanner.models.inventory import EnabledAPI, ResourceInventory
 
 if TYPE_CHECKING:
@@ -46,5 +46,7 @@ class ServiceUsageCollector(BaseCollector):
                         )
                     )
             except Exception as exc:
-                logger.warning("ServiceUsage collection failed for %s: %s", project_id, exc)
+                logger.warning(
+                    "ServiceUsage collection failed for %s: %s", project_id, _fmt_exc(exc)
+                )
                 inventory.inaccessible_projects.append(project_id)

@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from gcp_abuse_scanner.collectors.base import BaseCollector
+from gcp_abuse_scanner.collectors.base import BaseCollector, _fmt_exc
 from gcp_abuse_scanner.models.inventory import OrgPolicy, ResourceInventory
 
 if TYPE_CHECKING:
@@ -48,7 +48,7 @@ class OrgPolicyCollector(BaseCollector):
 
             orgpolicy = googleapiclient.discovery.build("orgpolicy", "v2", credentials=creds)
         except Exception as exc:
-            logger.error("Failed to build Org Policy client: %s", exc)
+            logger.error("Failed to build Org Policy client: %s", _fmt_exc(exc))
             return
 
         # Collect at org level if available
@@ -64,7 +64,7 @@ class OrgPolicyCollector(BaseCollector):
             try:
                 self._collect_policies(orgpolicy, inventory, resource)
             except Exception as exc:
-                logger.warning("Org Policy collection failed for %s: %s", resource, exc)
+                logger.warning("Org Policy collection failed for %s: %s", resource, _fmt_exc(exc))
 
     def _collect_policies(
         self, orgpolicy: object, inventory: ResourceInventory, resource: str

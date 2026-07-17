@@ -56,6 +56,18 @@ def _setup_logging(verbose: bool) -> None:
         format="%(message)s",
         handlers=[RichHandler(rich_tracebacks=True, show_path=False)],
     )
+    # Suppress noisy internal loggers from google-api-python-client.
+    # These emit "Encountered 403 Forbidden" etc. before our collectors
+    # log the same error with proper context (project_id, collector name).
+    for _noisy in (
+        "googleapiclient.discovery",
+        "googleapiclient.discovery_cache",
+        "googleapiclient.http",
+        "google.auth.transport.requests",
+        "google.auth._default",
+        "urllib3.connectionpool",
+    ):
+        logging.getLogger(_noisy).setLevel(logging.ERROR if verbose else logging.CRITICAL)
 
 
 @app.command()

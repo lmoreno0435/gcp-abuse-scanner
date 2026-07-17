@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any
 
-from gcp_abuse_scanner.collectors.base import BaseCollector
+from gcp_abuse_scanner.collectors.base import BaseCollector, _fmt_exc
 from gcp_abuse_scanner.models.inventory import ResourceInventory
 
 if TYPE_CHECKING:
@@ -47,7 +47,7 @@ class RecommenderCollector(BaseCollector):
 
             recommender = googleapiclient.discovery.build("recommender", "v1", credentials=creds)
         except Exception as exc:
-            logger.error("Failed to build Recommender client: %s", exc)
+            logger.error("Failed to build Recommender client: %s", _fmt_exc(exc))
             return
 
         # Initialize recommender_insights on inventory if not present

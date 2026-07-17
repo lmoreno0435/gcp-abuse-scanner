@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from gcp_abuse_scanner.collectors.base import BaseCollector
+from gcp_abuse_scanner.collectors.base import BaseCollector, _fmt_exc
 from gcp_abuse_scanner.models.inventory import FirewallRule, ResourceInventory
 
 if TYPE_CHECKING:
@@ -31,7 +31,7 @@ class NetworkCollector(BaseCollector):
 
             compute = googleapiclient.discovery.build("compute", "v1", credentials=creds)
         except Exception as exc:
-            logger.error("Failed to build Compute client for network: %s", exc)
+            logger.error("Failed to build Compute client for network: %s", _fmt_exc(exc))
             return
 
         for project_id in project_ids:
@@ -61,4 +61,4 @@ class NetworkCollector(BaseCollector):
                         previous_request=request, previous_response=response
                     )
             except Exception as exc:
-                logger.warning("Network collection failed for %s: %s", project_id, exc)
+                logger.warning("Network collection failed for %s: %s", project_id, _fmt_exc(exc))

@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from gcp_abuse_scanner.collectors.base import BaseCollector
+from gcp_abuse_scanner.collectors.base import BaseCollector, _fmt_exc
 from gcp_abuse_scanner.models.inventory import BudgetInfo, ProjectInfo, ResourceInventory
 
 if TYPE_CHECKING:
@@ -34,7 +34,7 @@ class BillingCollector(BaseCollector):
                 "billingbudgets", "v1", credentials=creds
             )
         except Exception as exc:
-            logger.error("Failed to build Billing clients: %s", exc)
+            logger.error("Failed to build Billing clients: %s", _fmt_exc(exc))
             return
 
         # Collect billing account info per project
@@ -56,7 +56,7 @@ class BillingCollector(BaseCollector):
                             ProjectInfo(project_id=project_id, billing_account_id=ba_id)
                         )
             except Exception as exc:
-                logger.warning("Billing info failed for %s: %s", project_id, exc)
+                logger.warning("Billing info failed for %s: %s", project_id, _fmt_exc(exc))
 
         # Collect budgets for each billing account
         for ba_id in billing_accounts:
@@ -85,4 +85,6 @@ class BillingCollector(BaseCollector):
                         .list_next(previous_request=request, previous_response=response)
                     )
             except Exception as exc:
-                logger.warning("Budget collection failed for billing account %s: %s", ba_id, exc)
+                logger.warning(
+                    "Budget collection failed for billing account %s: %s", ba_id, _fmt_exc(exc)
+                )

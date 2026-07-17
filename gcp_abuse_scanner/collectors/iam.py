@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 from google.cloud import asset_v1
 
-from gcp_abuse_scanner.collectors.base import BaseCollector
+from gcp_abuse_scanner.collectors.base import BaseCollector, _fmt_exc
 from gcp_abuse_scanner.models.inventory import IAMBinding, ResourceInventory, ServiceAccountInfo
 
 if TYPE_CHECKING:
@@ -53,7 +53,7 @@ class IAMCollector(BaseCollector):
                         )
                     )
         except Exception as exc:
-            logger.error("IAM collection failed: %s", exc)
+            logger.error("IAM collection failed: %s", _fmt_exc(exc))
             inventory.collector_errors.append({"collector": self.name, "error": str(exc)})
 
         # Collect service accounts and their keys
@@ -92,9 +92,9 @@ class IAMCollector(BaseCollector):
                             )
                         )
                 except Exception as exc:
-                    logger.warning("SA collection failed for %s: %s", project_id, exc)
+                    logger.warning("SA collection failed for %s: %s", project_id, _fmt_exc(exc))
         except Exception as exc:
-            logger.error("SA collection setup failed: %s", exc)
+            logger.error("SA collection setup failed: %s", _fmt_exc(exc))
 
     @staticmethod
     def _extract_project(resource: str, project_ids: list[str]) -> str | None:

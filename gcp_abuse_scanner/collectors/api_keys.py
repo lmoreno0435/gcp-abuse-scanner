@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from gcp_abuse_scanner.collectors.base import BaseCollector
+from gcp_abuse_scanner.collectors.base import BaseCollector, _fmt_exc
 from gcp_abuse_scanner.models.inventory import APIKey, ResourceInventory
 
 if TYPE_CHECKING:
@@ -31,7 +31,7 @@ class APIKeysCollector(BaseCollector):
 
             apikeys = googleapiclient.discovery.build("apikeys", "v2", credentials=creds)
         except Exception as exc:
-            logger.error("Failed to build API Keys client: %s", exc)
+            logger.error("Failed to build API Keys client: %s", _fmt_exc(exc))
             return
 
         for project_id in project_ids:
@@ -67,4 +67,4 @@ class APIKeysCollector(BaseCollector):
                         )
                     )
             except Exception as exc:
-                logger.warning("API Keys collection failed for %s: %s", project_id, exc)
+                logger.warning("API Keys collection failed for %s: %s", project_id, _fmt_exc(exc))

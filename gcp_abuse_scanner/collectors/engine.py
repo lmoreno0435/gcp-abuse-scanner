@@ -6,6 +6,7 @@ import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import TYPE_CHECKING
 
+from gcp_abuse_scanner.collectors.base import _fmt_exc
 from gcp_abuse_scanner.models.inventory import ResourceInventory
 
 if TYPE_CHECKING:
@@ -79,7 +80,7 @@ class CollectorEngine:
                 logger.info("Running collector: %s", collector.name)
                 collector.collect(inventory, project_ids, organization_id)
             except Exception as exc:
-                logger.error("Collector %s failed: %s", collector.name, exc)
+                logger.error("Collector %s failed: %s", collector.name, _fmt_exc(exc))
                 inventory.collector_errors.append({"collector": collector.name, "error": str(exc)})
 
         # ── Phase 2: concurrent collectors ───────────────────────────────────
@@ -114,7 +115,7 @@ class CollectorEngine:
                     future.result()
                     logger.info("Collector %s completed", collector_name)
                 except Exception as exc:
-                    logger.error("Collector %s failed: %s", collector_name, exc)
+                    logger.error("Collector %s failed: %s", collector_name, _fmt_exc(exc))
                     inventory.collector_errors.append(
                         {"collector": collector_name, "error": str(exc)}
                     )

@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from gcp_abuse_scanner.collectors.base import BaseCollector
+from gcp_abuse_scanner.collectors.base import BaseCollector, _fmt_exc
 from gcp_abuse_scanner.models.inventory import GKECluster, ResourceInventory
 
 if TYPE_CHECKING:
@@ -31,7 +31,7 @@ class GKECollector(BaseCollector):
 
             container = googleapiclient.discovery.build("container", "v1", credentials=creds)
         except Exception as exc:
-            logger.error("Failed to build GKE client: %s", exc)
+            logger.error("Failed to build GKE client: %s", _fmt_exc(exc))
             return
 
         for project_id in project_ids:
@@ -65,7 +65,7 @@ class GKECollector(BaseCollector):
                         )
                     )
             except Exception as exc:
-                logger.warning("GKE collection failed for %s: %s", project_id, exc)
+                logger.warning("GKE collection failed for %s: %s", project_id, _fmt_exc(exc))
                 inventory.collector_errors.append(
                     {
                         "collector": self.name,

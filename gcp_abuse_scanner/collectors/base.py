@@ -24,6 +24,31 @@ class APINotEnabledError(Exception):
     """Raised when a required API is not enabled in a project."""
 
 
+def _fmt_exc(exc: Exception) -> str:
+    """Return a concise one-line summary of a GCP HttpError or any exception.
+
+    googleapiclient.errors.HttpError.__str__ dumps the full JSON response body,
+    which is very noisy. We extract just the HTTP status and the first meaningful
+    reason string instead.
+    """
+    exc_str = str(exc)
+    # HttpError format: "<HttpError NNN when requesting URL returned "MSG", details: ...>"
+    # Extract just "HttpError NNN: MSG"
+    try:
+        import re
+
+        m = re.match(r"<HttpError (\d+) when requesting .+ returned \"([^\"]+)\"", exc_str)
+        if m:
+            status, msg = m.group(1), m.group(2)
+            # Truncate long billing/API messages to first sentence
+            first_sentence = msg.split(".")[0].strip()
+            return f"HTTP {status}: {first_sentence}"
+    except Exception:
+        pass
+    # Fallback: first 120 chars
+    return exc_str[:120] if len(exc_str) > 120 else exc_str
+
+
 class BaseCollector(abc.ABC):
     """
     Base class for all resource collectors.

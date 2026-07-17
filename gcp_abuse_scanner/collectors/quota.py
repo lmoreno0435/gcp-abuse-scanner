@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any
 
-from gcp_abuse_scanner.collectors.base import BaseCollector
+from gcp_abuse_scanner.collectors.base import BaseCollector, _fmt_exc
 from gcp_abuse_scanner.models.inventory import ResourceInventory
 
 if TYPE_CHECKING:
@@ -77,7 +77,7 @@ class QuotaCollector(BaseCollector):
                 "serviceusage", "v1beta1", credentials=creds
             )
         except Exception as exc:
-            logger.error("Failed to build Service Usage client for quotas: %s", exc)
+            logger.error("Failed to build Service Usage client for quotas: %s", _fmt_exc(exc))
             return
 
         for project_id in project_ids:
