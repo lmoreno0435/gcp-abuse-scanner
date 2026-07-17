@@ -232,11 +232,11 @@ class TestScanArgumentValidation:
         assert "cache" in result.output.lower()
 
     def test_scan_help_shows_vector_option(self):
-        result = runner.invoke(app, ["scan", "--help"])
+        result = runner.invoke(app, ["scan", "--help"], env={"COLUMNS": "200"})
         assert "--vector" in result.output
 
     def test_scan_help_shows_dry_run(self):
-        result = runner.invoke(app, ["scan", "--help"])
+        result = runner.invoke(app, ["scan", "--help"], env={"COLUMNS": "200"})
         assert "--dry-run" in result.output
 
     def test_scan_invalid_format_exits_nonzero(self):
