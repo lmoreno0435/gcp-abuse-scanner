@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-07-17
+
+### Fixed
+- Suppressed noisy `googleapiclient` internal log messages (`Encountered 403 Forbidden with reason "PERMISSION_DENIED"`) that appeared before each collector's own contextual warning. These are now silenced at `CRITICAL` level (downgraded to `ERROR` in `--verbose` mode).
+- Collector error messages now show a concise one-line summary instead of dumping the full JSON response body. Example: `GKE collection failed for my-proj: HTTP 403: This API method requires billing to be enabled` instead of a multi-line `<HttpError 403 when requesting ... details: [{'@type': ...}]>`.
+- Added `_fmt_exc()` helper in `collectors/base.py` with 17 unit tests covering `HttpError` formatting, generic exceptions, truncation, and collector integration.
+
 ## [0.1.0] - 2026-07-17
 
 ### Added
