@@ -26,7 +26,7 @@ from gcp_abuse_scanner.models.inventory import ResourceInventory
 
 def _make_id(check_id: str, resource: str, suffix: str = "") -> str:
     key = f"{resource}-{suffix}" if suffix else resource
-    h = hashlib.md5(key.encode()).hexdigest()[:8]
+    h = hashlib.md5(key.encode(), usedforsecurity=False).hexdigest()[:8]
     return f"{check_id}-{h}"
 
 
@@ -112,18 +112,12 @@ class CMN003ProjectNoOwnerLabel(BaseCheck):
                             "Identify the team or individual responsible for each project.",
                             "Add labels such as 'owner', 'team', and 'contact' to all compute instances.",
                             "Apply the same labels at the project level for inherited visibility.",
-                            "Use an Org Policy (constraints/gcp.resourceLocations or a custom constraint) "
-                            "to require specific labels on new resources.",
+                            "Use an Org Policy (constraints/gcp.resourceLocations or a custom constraint) to require specific labels on new resources.",
                             "Integrate label validation into your CI/CD pipeline (e.g., Terraform variable validation).",
                         ],
                         gcloud_commands=[
-                            "# Add labels to a compute instance\n"
-                            "gcloud compute instances add-labels INSTANCE_NAME \\\n"
-                            "  --labels=owner=team-name,contact=team@example.com \\\n"
-                            "  --zone=ZONE --project=PROJECT_ID",
-                            "# Add labels to the project itself\n"
-                            "gcloud projects update PROJECT_ID \\\n"
-                            "  --update-labels=owner=team-name,team=platform",
+                            "# Add labels to a compute instance\ngcloud compute instances add-labels INSTANCE_NAME \\\n  --labels=owner=team-name,contact=team@example.com \\\n  --zone=ZONE --project=PROJECT_ID",
+                            "# Add labels to the project itself\ngcloud projects update PROJECT_ID \\\n  --update-labels=owner=team-name,team=platform",
                         ],
                         iac_reference="google_compute_instance.labels / google_project.labels",
                         docs=[
@@ -223,16 +217,11 @@ class CMN004DefaultSAWithActiveKeys(BaseCheck):
                             "For GKE workloads, enable Workload Identity Federation.",
                             "Delete the user-managed keys from the default SA.",
                             "Consider disabling the default SA entirely if no workloads require it.",
-                            "Apply the org policy 'constraints/iam.disableServiceAccountKeyCreation' "
-                            "to prevent future key creation.",
+                            "Apply the org policy 'constraints/iam.disableServiceAccountKeyCreation' to prevent future key creation.",
                         ],
                         gcloud_commands=[
-                            "# List keys for the default SA\n"
-                            "gcloud iam service-accounts keys list \\\n"
-                            "  --iam-account=SA_EMAIL --project=PROJECT_ID",
-                            "# Delete a specific user-managed key\n"
-                            "gcloud iam service-accounts keys delete KEY_ID \\\n"
-                            "  --iam-account=SA_EMAIL --project=PROJECT_ID",
+                            "# List keys for the default SA\ngcloud iam service-accounts keys list \\\n  --iam-account=SA_EMAIL --project=PROJECT_ID",
+                            "# Delete a specific user-managed key\ngcloud iam service-accounts keys delete KEY_ID \\\n  --iam-account=SA_EMAIL --project=PROJECT_ID",
                         ],
                         iac_reference="google_service_account_key (avoid creating these)",
                         docs=[
@@ -334,25 +323,15 @@ class CMN005OrgSecurityPoliciesAbsent(BaseCheck):
                     ),
                     steps=[
                         "Review each missing constraint and understand its impact before enforcing.",
-                        "Apply 'constraints/compute.vmExternalIpAccess' to restrict external IPs "
-                        "to approved projects/VMs only.",
-                        "Apply 'constraints/iam.disableServiceAccountKeyCreation' to prevent "
-                        "creation of long-lived SA keys.",
-                        "Apply 'constraints/compute.skipDefaultNetworkCreation' to prevent "
-                        "auto-created default VPCs in new projects.",
-                        "Apply 'constraints/iam.allowedPolicyMemberDomains' to restrict IAM "
-                        "bindings to your organization's domain(s).",
+                        "Apply 'constraints/compute.vmExternalIpAccess' to restrict external IPs to approved projects/VMs only.",
+                        "Apply 'constraints/iam.disableServiceAccountKeyCreation' to prevent creation of long-lived SA keys.",
+                        "Apply 'constraints/compute.skipDefaultNetworkCreation' to prevent auto-created default VPCs in new projects.",
+                        "Apply 'constraints/iam.allowedPolicyMemberDomains' to restrict IAM bindings to your organization's domain(s).",
                         "Use 'dry-run' mode (audit) before enforcing to identify existing violations.",
                     ],
                     gcloud_commands=[
-                        "# Disable SA key creation at org level\n"
-                        "gcloud resource-manager org-policies enable-enforce \\\n"
-                        "  constraints/iam.disableServiceAccountKeyCreation \\\n"
-                        "  --organization=ORG_ID",
-                        "# Skip default network creation\n"
-                        "gcloud resource-manager org-policies enable-enforce \\\n"
-                        "  constraints/compute.skipDefaultNetworkCreation \\\n"
-                        "  --organization=ORG_ID",
+                        "# Disable SA key creation at org level\ngcloud resource-manager org-policies enable-enforce \\\n  constraints/iam.disableServiceAccountKeyCreation \\\n  --organization=ORG_ID",
+                        "# Skip default network creation\ngcloud resource-manager org-policies enable-enforce \\\n  constraints/compute.skipDefaultNetworkCreation \\\n  --organization=ORG_ID",
                     ],
                     iac_reference="google_org_policy_policy / google_organization_policy",
                     docs=[
@@ -456,24 +435,15 @@ class CMN006AuditLogsDisabled(BaseCheck):
                         steps=[
                             "Enable the Cloud Logging API for the project.",
                             "Navigate to Cloud Console → IAM & Admin → Audit Logs.",
-                            "Enable DATA_READ and DATA_WRITE audit logs for critical services: "
-                            "compute.googleapis.com, iam.googleapis.com, storage.googleapis.com.",
-                            "Configure log sinks to export audit logs to Cloud Storage or BigQuery "
-                            "for long-term retention.",
-                            "Set up log-based alerts for suspicious patterns (e.g., SA key creation, "
-                            "firewall rule changes, IAM policy modifications).",
+                            "Enable DATA_READ and DATA_WRITE audit logs for critical services: compute.googleapis.com, iam.googleapis.com, storage.googleapis.com.",
+                            "Configure log sinks to export audit logs to Cloud Storage or BigQuery for long-term retention.",
+                            "Set up log-based alerts for suspicious patterns (e.g., SA key creation, firewall rule changes, IAM policy modifications).",
                             "Apply the org policy to enforce audit logging across all projects.",
                         ],
                         gcloud_commands=[
-                            "# Enable the Cloud Logging API\n"
-                            "gcloud services enable logging.googleapis.com --project=PROJECT_ID",
-                            "# Enable Data Access audit logs for Compute (via IAM policy)\n"
-                            "# Use Cloud Console → IAM & Admin → Audit Logs for granular control.",
-                            "# Create a log sink to Cloud Storage for retention\n"
-                            "gcloud logging sinks create audit-sink \\\n"
-                            "  storage.googleapis.com/BUCKET_NAME \\\n"
-                            "  --log-filter='logName:cloudaudit.googleapis.com' \\\n"
-                            "  --project=PROJECT_ID",
+                            "# Enable the Cloud Logging API\ngcloud services enable logging.googleapis.com --project=PROJECT_ID",
+                            "# Enable Data Access audit logs for Compute (via IAM policy)\n# Use Cloud Console → IAM & Admin → Audit Logs for granular control.",
+                            "# Create a log sink to Cloud Storage for retention\ngcloud logging sinks create audit-sink \\\n  storage.googleapis.com/BUCKET_NAME \\\n  --log-filter='logName:cloudaudit.googleapis.com' \\\n  --project=PROJECT_ID",
                         ],
                         iac_reference="google_project_iam_audit_config",
                         docs=[

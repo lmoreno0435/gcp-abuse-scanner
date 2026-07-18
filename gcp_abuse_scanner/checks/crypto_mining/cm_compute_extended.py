@@ -44,7 +44,7 @@ _STARTUP_SCRIPT_PATTERNS = [
 
 
 def _make_id(check_id: str, project_id: str, resource: str) -> str:
-    h = hashlib.md5(resource.encode()).hexdigest()[:8]
+    h = hashlib.md5(resource.encode(), usedforsecurity=False).hexdigest()[:8]
     return f"{check_id}-{project_id}-{h}"
 
 
@@ -147,8 +147,7 @@ class CM002OrgPolicyExternalIPNotRestricted(BaseCheck):
                             "Apply the org policy to deny external IPs organization-wide.",
                         ],
                         gcloud_commands=[
-                            "gcloud resource-manager org-policies deny "
-                            "constraints/compute.vmExternalIpAccess --organization=ORG_ID",
+                            "gcloud resource-manager org-policies deny constraints/compute.vmExternalIpAccess --organization=ORG_ID",
                         ],
                         iac_reference="google_org_policy_policy.compute_vm_external_ip_access",
                         docs=[
@@ -214,8 +213,7 @@ class CM002OrgPolicyExternalIPNotRestricted(BaseCheck):
                             "Migrate outbound connectivity to Cloud NAT before enforcing.",
                         ],
                         gcloud_commands=[
-                            "gcloud resource-manager org-policies deny "
-                            "constraints/compute.vmExternalIpAccess --organization=ORG_ID",
+                            "gcloud resource-manager org-policies deny constraints/compute.vmExternalIpAccess --organization=ORG_ID",
                         ],
                         iac_reference="google_org_policy_policy.compute_vm_external_ip_access",
                         docs=[
@@ -303,12 +301,8 @@ class CM003FirewallEgressPermissive(BaseCheck):
                             f"Delete or restrict the permissive rule '{rule.name}'.",
                         ],
                         gcloud_commands=[
-                            f"gcloud compute firewall-rules update {rule.name} "
-                            "--destination-ranges=SPECIFIC_CIDR_RANGE",
-                            "# Or create a deny-all egress rule:\n"
-                            "gcloud compute firewall-rules create deny-all-egress "
-                            f"--network={rule.network} --direction=EGRESS --action=DENY "
-                            "--rules=all --destination-ranges=0.0.0.0/0 --priority=65000",
+                            f"gcloud compute firewall-rules update {rule.name} --destination-ranges=SPECIFIC_CIDR_RANGE",
+                            f"# Or create a deny-all egress rule:\ngcloud compute firewall-rules create deny-all-egress --network={rule.network} --direction=EGRESS --action=DENY --rules=all --destination-ranges=0.0.0.0/0 --priority=65000",
                         ],
                         iac_reference="google_compute_firewall.direction",
                         docs=[
@@ -388,16 +382,13 @@ class CM005VMsWithGPUNoRestriction(BaseCheck):
                         steps=[
                             "Verify that the GPU instance has a legitimate business purpose.",
                             "Review the instance's workload and owner.",
-                            "Apply org policy constraints/compute.restrictCloudTPUUsage or "
-                            "quota limits to restrict GPU availability.",
+                            "Apply org policy constraints/compute.restrictCloudTPUUsage or quota limits to restrict GPU availability.",
                             "Enable billing alerts and anomaly detection for GPU usage.",
                             "Consider using labels and resource hierarchy to track GPU instances.",
                         ],
                         gcloud_commands=[
-                            "# List all GPU instances:\n"
-                            "gcloud compute instances list --filter='accelerators:*' --format='table(name,zone,accelerators)'",
-                            "# Set GPU quota to 0 in a region:\n"
-                            "# Use Cloud Console: IAM & Admin > Quotas > filter by GPU",
+                            "# List all GPU instances:\ngcloud compute instances list --filter='accelerators:*' --format='table(name,zone,accelerators)'",
+                            "# Set GPU quota to 0 in a region:\n# Use Cloud Console: IAM & Admin > Quotas > filter by GPU",
                         ],
                         iac_reference="google_compute_instance.guest_accelerator",
                         docs=[
@@ -484,13 +475,9 @@ class CM006InsecureInstanceMetadata(BaseCheck):
                             "Enforce OS Login via Org Policy: constraints/compute.requireOsLogin.",
                         ],
                         gcloud_commands=[
-                            f"gcloud compute instances add-metadata {instance.name} "
-                            f"--zone={instance.zone} --metadata=serial-port-enable=false",
-                            f"gcloud compute instances add-metadata {instance.name} "
-                            f"--zone={instance.zone} --metadata=enable-oslogin=true",
-                            "# Enforce org-wide:\n"
-                            "gcloud resource-manager org-policies enable-enforce "
-                            "constraints/compute.disableSerialPortAccess --organization=ORG_ID",
+                            f"gcloud compute instances add-metadata {instance.name} --zone={instance.zone} --metadata=serial-port-enable=false",
+                            f"gcloud compute instances add-metadata {instance.name} --zone={instance.zone} --metadata=enable-oslogin=true",
+                            "# Enforce org-wide:\ngcloud resource-manager org-policies enable-enforce constraints/compute.disableSerialPortAccess --organization=ORG_ID",
                         ],
                         iac_reference="google_compute_instance.metadata",
                         docs=[
@@ -594,14 +581,9 @@ class CM007StartupScriptExternalDownload(BaseCheck):
                             "Enable VM startup script logging and alerting.",
                         ],
                         gcloud_commands=[
-                            "# Upload script to GCS:\n"
-                            "gsutil cp startup.sh gs://YOUR_BUCKET/startup.sh",
-                            f"gcloud compute instances add-metadata {instance.name} "
-                            f"--zone={instance.zone} "
-                            "--metadata=startup-script-url=gs://YOUR_BUCKET/startup.sh",
-                            f"# Remove inline startup script:\n"
-                            f"gcloud compute instances remove-metadata {instance.name} "
-                            f"--zone={instance.zone} --keys=startup-script",
+                            "# Upload script to GCS:\ngsutil cp startup.sh gs://YOUR_BUCKET/startup.sh",
+                            f"gcloud compute instances add-metadata {instance.name} --zone={instance.zone} --metadata=startup-script-url=gs://YOUR_BUCKET/startup.sh",
+                            f"# Remove inline startup script:\ngcloud compute instances remove-metadata {instance.name} --zone={instance.zone} --keys=startup-script",
                         ],
                         iac_reference="google_compute_instance.metadata.startup-script",
                         docs=[
@@ -692,15 +674,8 @@ class CM011NoResourceLocationRestriction(BaseCheck):
                             "Review existing resources in non-approved regions.",
                         ],
                         gcloud_commands=[
-                            "# Create a policy file (policy.yaml) with allowed locations, then:\n"
-                            "gcloud resource-manager org-policies set-policy policy.yaml "
-                            "--organization=ORG_ID",
-                            "# Example policy.yaml content:\n"
-                            "# constraint: constraints/gcp.resourceLocations\n"
-                            "# listPolicy:\n"
-                            "#   allowedValues:\n"
-                            "#     - in:us-locations\n"
-                            "#     - in:eu-locations",
+                            "# Create a policy file (policy.yaml) with allowed locations, then:\ngcloud resource-manager org-policies set-policy policy.yaml --organization=ORG_ID",
+                            "# Example policy.yaml content:\n# constraint: constraints/gcp.resourceLocations\n# listPolicy:\n#   allowedValues:\n#     - in:us-locations\n#     - in:eu-locations",
                         ],
                         iac_reference="google_org_policy_policy.gcp_resource_locations",
                         docs=[
@@ -766,9 +741,7 @@ class CM011NoResourceLocationRestriction(BaseCheck):
                             "Review existing resources in non-approved regions.",
                         ],
                         gcloud_commands=[
-                            "# Update the policy with allowed locations:\n"
-                            "gcloud resource-manager org-policies set-policy policy.yaml "
-                            "--organization=ORG_ID",
+                            "# Update the policy with allowed locations:\ngcloud resource-manager org-policies set-policy policy.yaml --organization=ORG_ID",
                         ],
                         iac_reference="google_org_policy_policy.gcp_resource_locations",
                         docs=[

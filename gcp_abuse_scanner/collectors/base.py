@@ -43,7 +43,7 @@ def _fmt_exc(exc: Exception) -> str:
             # Truncate long billing/API messages to first sentence
             first_sentence = msg.split(".")[0].strip()
             return f"HTTP {status}: {first_sentence}"
-    except Exception:
+    except Exception:  # nosec B110 — intentional fallback; _fmt_exc is best-effort only
         pass
     # Fallback: first 120 chars
     return exc_str[:120] if len(exc_str) > 120 else exc_str

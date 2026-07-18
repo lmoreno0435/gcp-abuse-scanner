@@ -25,7 +25,7 @@ class Vector(str, Enum):
 
 class FindingStatus(str, Enum):
     FAIL = "FAIL"
-    PASS = "PASS"
+    PASS = "PASS"  # nosec B105 — not a password; this is a finding status enum value
     NOT_APPLICABLE = "NOT_APPLICABLE"
     SKIPPED = "SKIPPED"
     ERROR = "ERROR"

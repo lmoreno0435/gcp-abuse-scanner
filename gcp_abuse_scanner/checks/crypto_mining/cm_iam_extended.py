@@ -48,7 +48,7 @@ _RECOMMENDER_REMOVE_SUBTYPES = {"REMOVE_ROLE", "REPLACE_ROLE"}
 
 
 def _make_id(check_id: str, project_id: str, key: str) -> str:
-    h = hashlib.md5(key.encode()).hexdigest()[:8]
+    h = hashlib.md5(key.encode(), usedforsecurity=False).hexdigest()[:8]
     return f"{check_id}-{project_id}-{h}"
 
 
@@ -141,15 +141,12 @@ class CM040BroadComputeCreationRoles(BaseCheck):
                         steps=[
                             "Audit who legitimately needs this role and why.",
                             "Remove the binding for any principal that does not require it.",
-                            "Replace 'compute.admin' with narrower roles such as "
-                            "'compute.instanceAdmin.v1' scoped to specific resources.",
-                            "For domain: or allUsers members, remove immediately and "
-                            "investigate for potential compromise.",
+                            "Replace 'compute.admin' with narrower roles such as 'compute.instanceAdmin.v1' scoped to specific resources.",
+                            "For domain: or allUsers members, remove immediately and investigate for potential compromise.",
                             "Enable Org Policy: constraints/iam.allowedPolicyMemberDomains.",
                         ],
                         gcloud_commands=[
-                            f"gcloud projects get-iam-policy {binding.project_id} "
-                            "--format=json > policy.json",
+                            f"gcloud projects get-iam-policy {binding.project_id} --format=json > policy.json",
                             "# Edit policy.json to remove the offending binding, then:",
                             f"gcloud projects set-iam-policy {binding.project_id} policy.json",
                         ],
@@ -240,15 +237,12 @@ class CM042BroadServiceAccountActAs(BaseCheck):
                         steps=[
                             "Identify which service accounts are targeted by this binding.",
                             "Remove allUsers, allAuthenticatedUsers, domain:, and group: members.",
-                            "Grant 'roles/iam.serviceAccountUser' only to specific, "
-                            "named service accounts or users with documented justification.",
-                            "Audit the permissions of the impersonated SA — if it has "
-                            "compute creation roles, treat this as CRITICAL.",
+                            "Grant 'roles/iam.serviceAccountUser' only to specific, named service accounts or users with documented justification.",
+                            "Audit the permissions of the impersonated SA — if it has compute creation roles, treat this as CRITICAL.",
                             "Enable VPC Service Controls to limit SA token usage.",
                         ],
                         gcloud_commands=[
-                            f"gcloud projects remove-iam-policy-binding {binding.project_id} "
-                            f"--member=BROAD_MEMBER --role={binding.role}",
+                            f"gcloud projects remove-iam-policy-binding {binding.project_id} --member=BROAD_MEMBER --role={binding.role}",
                         ],
                         iac_reference="google_service_account_iam_binding",
                         docs=[
@@ -346,18 +340,14 @@ class CM045RecommenderOverpermissionedSA(BaseCheck):
                             "over-permissioned role with a more granular alternative."
                         ),
                         steps=[
-                            "Review the full recommendation in the GCP Console under "
-                            "IAM & Admin > Recommender.",
+                            "Review the full recommendation in the GCP Console under IAM & Admin > Recommender.",
                             "Validate that removing the role will not break any workload.",
                             "Apply the recommendation (remove or replace the role).",
                             "Set up periodic IAM Recommender reviews (e.g. monthly).",
                         ],
                         gcloud_commands=[
                             "# List active IAM recommendations for a project:",
-                            f"gcloud recommender recommendations list "
-                            f"--project={project_id} "
-                            "--recommender=google.iam.policy.Recommender "
-                            "--location=global",
+                            f"gcloud recommender recommendations list --project={project_id} --recommender=google.iam.policy.Recommender --location=global",
                         ],
                         iac_reference="google_project_iam_binding",
                         docs=[
@@ -478,24 +468,14 @@ class CM050NoEgressRestriction(BaseCheck):
                             "allowlist only the destination IPs/ports required by workloads."
                         ),
                         steps=[
-                            "Inventory all legitimate outbound destinations for workloads "
-                            "in this project.",
-                            "Create explicit ALLOW egress rules for those destinations "
-                            "with a priority lower than 65000 (e.g. 1000).",
-                            "Create a catch-all DENY egress rule targeting 0.0.0.0/0 "
-                            "with priority 65534.",
+                            "Inventory all legitimate outbound destinations for workloads in this project.",
+                            "Create explicit ALLOW egress rules for those destinations with a priority lower than 65000 (e.g. 1000).",
+                            "Create a catch-all DENY egress rule targeting 0.0.0.0/0 with priority 65534.",
                             "Monitor VPC Flow Logs for unexpected egress traffic.",
                             "Consider Cloud Armor or Cloud IDS for additional egress inspection.",
                         ],
                         gcloud_commands=[
-                            f"gcloud compute firewall-rules create deny-all-egress-{project_id} "
-                            f"--project={project_id} "
-                            "--direction=EGRESS "
-                            "--action=DENY "
-                            "--rules=all "
-                            "--destination-ranges=0.0.0.0/0 "
-                            "--priority=65534 "
-                            "--network=default",
+                            f"gcloud compute firewall-rules create deny-all-egress-{project_id} --project={project_id} --direction=EGRESS --action=DENY --rules=all --destination-ranges=0.0.0.0/0 --priority=65534 --network=default",
                         ],
                         iac_reference="google_compute_firewall.direction=EGRESS",
                         docs=[
@@ -595,20 +575,12 @@ class CM060NoBudgetAlert(BaseCheck):
                             "Navigate to Billing > Budgets & Alerts in the GCP Console.",
                             "Create a budget covering all projects in the billing account.",
                             "Set threshold rules at 50%, 90%, and 100% of the budget amount.",
-                            "Configure email notifications and/or Pub/Sub alerts for "
-                            "automated response (e.g. disable billing on breach).",
-                            "Consider setting a budget for each project individually "
-                            "in addition to the account-level budget.",
+                            "Configure email notifications and/or Pub/Sub alerts for automated response (e.g. disable billing on breach).",
+                            "Consider setting a budget for each project individually in addition to the account-level budget.",
                         ],
                         gcloud_commands=[
                             "# Create a budget via the Billing API (requires billing admin):",
-                            "gcloud billing budgets create "
-                            "--billing-account=BILLING_ACCOUNT_ID "
-                            "--display-name='Monthly Spend Alert' "
-                            "--budget-amount=1000USD "
-                            "--threshold-rule=percent=0.5 "
-                            "--threshold-rule=percent=0.9 "
-                            "--threshold-rule=percent=1.0",
+                            "gcloud billing budgets create --billing-account=BILLING_ACCOUNT_ID --display-name='Monthly Spend Alert' --budget-amount=1000USD --threshold-rule=percent=0.5 --threshold-rule=percent=0.9 --threshold-rule=percent=1.0",
                         ],
                         iac_reference="google_billing_budget",
                         docs=[
@@ -676,10 +648,7 @@ class CM060NoBudgetAlert(BaseCheck):
                             "Verify that notification channels (email, Pub/Sub) are configured.",
                         ],
                         gcloud_commands=[
-                            f"gcloud billing budgets update {budget.name} "
-                            "--threshold-rule=percent=0.5 "
-                            "--threshold-rule=percent=0.9 "
-                            "--threshold-rule=percent=1.0",
+                            f"gcloud billing budgets update {budget.name} --threshold-rule=percent=0.5 --threshold-rule=percent=0.9 --threshold-rule=percent=1.0",
                         ],
                         iac_reference="google_billing_budget.threshold_rules",
                         docs=[

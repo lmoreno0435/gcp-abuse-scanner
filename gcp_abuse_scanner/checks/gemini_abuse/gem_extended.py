@@ -57,7 +57,7 @@ _SA_KEY_CREATION_CONSTRAINT = "constraints/iam.disableServiceAccountKeyCreation"
 
 
 def _make_id(check_id: str, project_id: str, key: str) -> str:
-    h = hashlib.md5(key.encode()).hexdigest()[:8]
+    h = hashlib.md5(key.encode(), usedforsecurity=False).hexdigest()[:8]
     return f"{check_id}-{project_id}-{h}"
 
 
@@ -165,8 +165,7 @@ class GEM004APIKeyNoRotation(BaseCheck):
                             "Establish a key rotation schedule (≤ 90 days).",
                         ],
                         gcloud_commands=[
-                            "gcloud services api-keys create --display-name=NEW_KEY "
-                            "--api-target=service=generativelanguage.googleapis.com",
+                            "gcloud services api-keys create --display-name=NEW_KEY --api-target=service=generativelanguage.googleapis.com",
                             f"gcloud services api-keys delete {key.uid}  # after migration",
                         ],
                         iac_reference="google_apikeys_key",
@@ -342,8 +341,7 @@ class GEM006APIKeyNoReferrerRestriction(BaseCheck):
                             "Rotate the key after applying restrictions.",
                         ],
                         gcloud_commands=[
-                            f"gcloud services api-keys update {key.uid} "
-                            "--allowed-referrers=https://yourdomain.com/*",
+                            f"gcloud services api-keys update {key.uid} --allowed-referrers=https://yourdomain.com/*",
                         ],
                         iac_reference="google_apikeys_key.restrictions.browser_key_restrictions",
                         docs=[
@@ -430,8 +428,7 @@ class GEM010GenerativeLanguageAPIEnabled(BaseCheck):
                             "Enable Cloud Audit Logs for the service to monitor usage.",
                         ],
                         gcloud_commands=[
-                            f"gcloud services disable {self._TARGET_SERVICE} "
-                            f"--project={project_id}",
+                            f"gcloud services disable {self._TARGET_SERVICE} --project={project_id}",
                         ],
                         iac_reference="google_project_service",
                         docs=[
@@ -538,10 +535,8 @@ class GEM011VertexAIEnabledNoBroadIAMControls(BaseCheck):
                             "Consider using IAM Conditions to further restrict access.",
                         ],
                         gcloud_commands=[
-                            f"gcloud projects get-iam-policy {project_id} "
-                            "--format=json | jq '.bindings[] | select(.role | contains(\"aiplatform\"))'",
-                            f"gcloud projects remove-iam-policy-binding {project_id} "
-                            "--member=BROAD_MEMBER --role=ROLE",
+                            f"gcloud projects get-iam-policy {project_id} --format=json | jq '.bindings[] | select(.role | contains(\"aiplatform\"))'",
+                            f"gcloud projects remove-iam-policy-binding {project_id} --member=BROAD_MEMBER --role=ROLE",
                         ],
                         iac_reference="google_project_iam_binding",
                         docs=["https://cloud.google.com/vertex-ai/docs/general/access-control"],
@@ -642,8 +637,7 @@ class GEM022SAWithVertexAccessAndExportedKeys(BaseCheck):
                         ],
                         gcloud_commands=[
                             f"gcloud iam service-accounts keys list --iam-account={sa.email}",
-                            f"gcloud iam service-accounts keys delete KEY_ID "
-                            f"--iam-account={sa.email}",
+                            f"gcloud iam service-accounts keys delete KEY_ID --iam-account={sa.email}",
                         ],
                         iac_reference="google_service_account_key",
                         docs=[
@@ -732,10 +726,8 @@ class GEM023BroadVertexPredictAccess(BaseCheck):
                             "Enable VPC Service Controls to restrict API access by network.",
                         ],
                         gcloud_commands=[
-                            f"gcloud projects remove-iam-policy-binding {binding.project_id} "
-                            f"--member=BROAD_MEMBER --role={binding.role}",
-                            f"gcloud projects add-iam-policy-binding {binding.project_id} "
-                            f"--member=serviceAccount:SPECIFIC_SA --role={binding.role}",
+                            f"gcloud projects remove-iam-policy-binding {binding.project_id} --member=BROAD_MEMBER --role={binding.role}",
+                            f"gcloud projects add-iam-policy-binding {binding.project_id} --member=serviceAccount:SPECIFIC_SA --role={binding.role}",
                         ],
                         iac_reference="google_project_iam_binding.members",
                         docs=[
@@ -819,9 +811,7 @@ class GEM030VertexEndpointNoPrivateNetwork(BaseCheck):
                             "Validate that internal consumers can reach the endpoint.",
                         ],
                         gcloud_commands=[
-                            f"gcloud ai endpoints update {endpoint.name} "
-                            f"--region={endpoint.region} "
-                            "--network=projects/PROJECT_NUMBER/global/networks/VPC_NAME",
+                            f"gcloud ai endpoints update {endpoint.name} --region={endpoint.region} --network=projects/PROJECT_NUMBER/global/networks/VPC_NAME",
                         ],
                         iac_reference="google_vertex_ai_endpoint.network",
                         docs=[
@@ -1037,13 +1027,8 @@ class GEM050NoAPIKeyCreationRestriction(BaseCheck):
                             "Use exceptions (folder/project overrides) only where strictly needed.",
                         ],
                         gcloud_commands=[
-                            "gcloud org-policies set-policy policy.yaml " "--organization=ORG_ID",
-                            "# policy.yaml:\n"
-                            "# name: organizations/ORG_ID/policies/"
-                            "iam.disableServiceAccountKeyCreation\n"
-                            "# spec:\n"
-                            "#   rules:\n"
-                            "#   - enforce: true",
+                            "gcloud org-policies set-policy policy.yaml --organization=ORG_ID",
+                            "# policy.yaml:\n# name: organizations/ORG_ID/policies/iam.disableServiceAccountKeyCreation\n# spec:\n#   rules:\n#   - enforce: true",
                         ],
                         iac_reference="google_org_policy_policy",
                         docs=[

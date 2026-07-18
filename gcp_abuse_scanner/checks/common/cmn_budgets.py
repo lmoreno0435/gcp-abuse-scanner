@@ -24,7 +24,7 @@ from gcp_abuse_scanner.models.inventory import ResourceInventory
 
 def _make_id(check_id: str, billing_account: str, suffix: str = "") -> str:
     key = f"{billing_account}-{suffix}"
-    h = hashlib.md5(key.encode()).hexdigest()[:8]
+    h = hashlib.md5(key.encode(), usedforsecurity=False).hexdigest()[:8]
     return f"{check_id}-{h}"
 
 
@@ -93,8 +93,7 @@ class CMN001NoBudget(BaseCheck):
                             "Consider separate budgets per project for granular visibility.",
                         ],
                         gcloud_commands=[
-                            "# Use Cloud Console or Terraform — gcloud CLI has limited budget support.\n"
-                            "# Terraform: google_billing_budget resource.",
+                            "# Use Cloud Console or Terraform — gcloud CLI has limited budget support.\n# Terraform: google_billing_budget resource.",
                         ],
                         iac_reference="google_billing_budget",
                         docs=[
@@ -165,8 +164,7 @@ class CMN002BudgetNoAlerts(BaseCheck):
                             "Configure email recipients and/or Pub/Sub topic for alerts.",
                         ],
                         gcloud_commands=[
-                            "# Use Cloud Console or Terraform to add threshold rules.\n"
-                            "# Terraform: google_billing_budget.threshold_rules",
+                            "# Use Cloud Console or Terraform to add threshold rules.\n# Terraform: google_billing_budget.threshold_rules",
                         ],
                         iac_reference="google_billing_budget.threshold_rules",
                         docs=[

@@ -1,5 +1,5 @@
 # ─── Stage 1: builder ────────────────────────────────────────────────────────
-FROM python:3.11-slim AS builder
+FROM python:3.12-slim AS builder
 
 WORKDIR /build
 
@@ -13,7 +13,7 @@ COPY gcp_abuse_scanner/ ./gcp_abuse_scanner/
 RUN pip wheel --no-cache-dir --wheel-dir /build/dist .
 
 # ─── Stage 2: runtime ────────────────────────────────────────────────────────
-FROM python:3.11-slim AS runtime
+FROM python:3.12-slim AS runtime
 
 LABEL org.opencontainers.image.title="gcp-abuse-scanner"
 LABEL org.opencontainers.image.description="Preventive GCP security scanner for crypto mining and Gemini API abuse"

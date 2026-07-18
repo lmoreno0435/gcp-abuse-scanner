@@ -27,11 +27,8 @@ _GEMINI_APIS = {
     "generativelanguage.googleapis.com",
     "aiplatform.googleapis.com",
 }
-_KEY_MAX_AGE_DAYS = 90
-
-
 def _make_id(check_id: str, project_id: str, key_name: str) -> str:
-    h = hashlib.md5(key_name.encode()).hexdigest()[:8]
+    h = hashlib.md5(key_name.encode(), usedforsecurity=False).hexdigest()[:8]
     return f"{check_id}-{project_id}-{h}"
 
 
@@ -123,9 +120,7 @@ class GEM001NoAPIRestrictions(BaseCheck):
                             "Consider migrating to OAuth 2.0 for server-side use cases.",
                         ],
                         gcloud_commands=[
-                            f"gcloud services api-keys update {key.uid} "
-                            "--api-target=service=generativelanguage.googleapis.com "
-                            "--allowed-referrers=https://yourdomain.com/*",
+                            f"gcloud services api-keys update {key.uid} --api-target=service=generativelanguage.googleapis.com --allowed-referrers=https://yourdomain.com/*",
                         ],
                         iac_reference="google_apikeys_key.restrictions",
                         docs=[
@@ -201,10 +196,8 @@ class GEM002NoAppRestrictions(BaseCheck):
                             "Rotate the key after applying restrictions.",
                         ],
                         gcloud_commands=[
-                            f"# Browser key:\ngcloud services api-keys update {key.uid} "
-                            "--allowed-referrers=https://yourdomain.com/*",
-                            f"# Server key:\ngcloud services api-keys update {key.uid} "
-                            "--allowed-ips=203.0.113.0/24",
+                            f"# Browser key:\ngcloud services api-keys update {key.uid} --allowed-referrers=https://yourdomain.com/*",
+                            f"# Server key:\ngcloud services api-keys update {key.uid} --allowed-ips=203.0.113.0/24",
                         ],
                         iac_reference="google_apikeys_key.restrictions.browser_key_restrictions",
                         docs=[
@@ -277,8 +270,7 @@ class GEM003KeyTargetsGemini(BaseCheck):
                             "Monitor key usage via Cloud Audit Logs.",
                         ],
                         gcloud_commands=[
-                            f"gcloud services api-keys update {key.uid} "
-                            "--allowed-referrers=https://yourdomain.com/*",
+                            f"gcloud services api-keys update {key.uid} --allowed-referrers=https://yourdomain.com/*",
                         ],
                         iac_reference="google_apikeys_key.restrictions",
                         docs=[

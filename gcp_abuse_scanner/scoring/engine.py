@@ -150,7 +150,7 @@ class ScoringEngine:
             vector_findings[f.vector.value].append(f)
 
         summaries = []
-        for vector in Vector:
+        for vector in Vector:  # lgtm[py/non-iterable-in-for-loop] — Enum classes are iterable
             vf = vector_findings.get(vector.value, [])
             summaries.append(
                 VectorSummary(

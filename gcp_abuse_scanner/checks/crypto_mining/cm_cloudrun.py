@@ -23,7 +23,7 @@ from gcp_abuse_scanner.models.inventory import ResourceInventory
 
 
 def _make_id(check_id: str, project_id: str, resource: str) -> str:
-    h = hashlib.md5(resource.encode()).hexdigest()[:8]
+    h = hashlib.md5(resource.encode(), usedforsecurity=False).hexdigest()[:8]
     return f"{check_id}-{project_id}-{h}"
 
 
@@ -93,15 +93,11 @@ class CM030CloudRunPublicInvoker(BaseCheck):
                             "Identify the legitimate callers of this Cloud Run service.",
                             "Remove 'allUsers' from the 'roles/run.invoker' IAM binding.",
                             "Grant 'roles/run.invoker' only to specific service accounts or user groups.",
-                            "If public access is required, front the service with Cloud Endpoints "
-                            "or API Gateway with authentication enforced.",
+                            "If public access is required, front the service with Cloud Endpoints or API Gateway with authentication enforced.",
                             "Consider enabling IAP for browser-based access.",
                         ],
                         gcloud_commands=[
-                            f"gcloud run services remove-iam-policy-binding {service.name} "
-                            f"--region={service.region} "
-                            "--member=allUsers "
-                            "--role=roles/run.invoker",
+                            f"gcloud run services remove-iam-policy-binding {service.name} --region={service.region} --member=allUsers --role=roles/run.invoker",
                         ],
                         iac_reference="google_cloud_run_service_iam_binding.members",
                         docs=[
@@ -200,9 +196,7 @@ class CM031CloudRunUnboundedMaxScale(BaseCheck):
                             "Review Cloud Run metrics to right-size the limit over time.",
                         ],
                         gcloud_commands=[
-                            f"gcloud run services update {service.name} "
-                            f"--region={service.region} "
-                            "--max-instances=N",
+                            f"gcloud run services update {service.name} --region={service.region} --max-instances=N",
                         ],
                         iac_reference=(
                             "google_cloud_run_v2_service.template.scaling.max_instance_count"

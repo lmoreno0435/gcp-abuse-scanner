@@ -34,7 +34,7 @@ _BROAD_MEMBER_PREFIXES = ("domain:", "group:")
 
 
 def _make_id(check_id: str, project_id: str, key: str) -> str:
-    h = hashlib.md5(key.encode()).hexdigest()[:8]
+    h = hashlib.md5(key.encode(), usedforsecurity=False).hexdigest()[:8]
     return f"{check_id}-{project_id}-{h}"
 
 
@@ -105,10 +105,8 @@ class GEM020BroadVertexIAM(BaseCheck):
                             "Enable Org Policy: constraints/iam.allowedPolicyMemberDomains.",
                         ],
                         gcloud_commands=[
-                            f"gcloud projects remove-iam-policy-binding {binding.project_id} "
-                            f"--member=BROAD_MEMBER --role={binding.role}",
-                            f"gcloud projects add-iam-policy-binding {binding.project_id} "
-                            f"--member=serviceAccount:SPECIFIC_SA --role={binding.role}",
+                            f"gcloud projects remove-iam-policy-binding {binding.project_id} --member=BROAD_MEMBER --role={binding.role}",
+                            f"gcloud projects add-iam-policy-binding {binding.project_id} --member=serviceAccount:SPECIFIC_SA --role={binding.role}",
                         ],
                         iac_reference="google_project_iam_binding.members",
                         docs=["https://cloud.google.com/vertex-ai/docs/general/access-control"],
@@ -178,10 +176,8 @@ class GEM021PublicVertexBinding(BaseCheck):
                             "File a support ticket if unauthorized usage is detected.",
                         ],
                         gcloud_commands=[
-                            f"gcloud projects remove-iam-policy-binding {binding.project_id} "
-                            f"--member=allUsers --role={binding.role}",
-                            f"gcloud projects remove-iam-policy-binding {binding.project_id} "
-                            f"--member=allAuthenticatedUsers --role={binding.role}",
+                            f"gcloud projects remove-iam-policy-binding {binding.project_id} --member=allUsers --role={binding.role}",
+                            f"gcloud projects remove-iam-policy-binding {binding.project_id} --member=allAuthenticatedUsers --role={binding.role}",
                         ],
                         iac_reference="google_project_iam_binding.members",
                         docs=["https://cloud.google.com/vertex-ai/docs/general/access-control"],

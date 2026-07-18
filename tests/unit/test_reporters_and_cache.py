@@ -209,7 +209,7 @@ class TestHTMLReporter:
         html = HTMLReporter().render(report)
 
         # Coverage data should appear
-        assert "container.googleapis.com" in html  # skipped API
+        assert "container.googleapis.com" in html  # skipped API  # lgtm[py/incomplete-url-substring-sanitization]
 
 
 # ─────────────────────────────────────────────────────────────────────────────

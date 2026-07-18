@@ -28,7 +28,7 @@ _EDITOR_ROLES = {"roles/editor", "roles/owner"}
 
 
 def _make_id(check_id: str, project_id: str, key: str) -> str:
-    h = hashlib.md5(key.encode()).hexdigest()[:8]
+    h = hashlib.md5(key.encode(), usedforsecurity=False).hexdigest()[:8]
     return f"{check_id}-{project_id}-{h}"
 
 
@@ -92,8 +92,7 @@ class CM043PublicIAMBinding(BaseCheck):
                             "Enable Org Policy: constraints/iam.allowedPolicyMemberDomains.",
                         ],
                         gcloud_commands=[
-                            f"gcloud projects remove-iam-policy-binding {binding.project_id} "
-                            f"--member=allUsers --role={binding.role}",
+                            f"gcloud projects remove-iam-policy-binding {binding.project_id} --member=allUsers --role={binding.role}",
                         ],
                         iac_reference="google_project_iam_binding.members",
                         docs=[
@@ -174,9 +173,7 @@ class CM044DefaultComputeSAEditor(BaseCheck):
                             "Update VMs to use the dedicated SA.",
                         ],
                         gcloud_commands=[
-                            f"gcloud projects remove-iam-policy-binding {binding.project_id} "
-                            f"--member=serviceAccount:PROJECT_NUMBER{_COMPUTE_DEFAULT_SA_SUFFIX} "
-                            f"--role={binding.role}",
+                            f"gcloud projects remove-iam-policy-binding {binding.project_id} --member=serviceAccount:PROJECT_NUMBER{_COMPUTE_DEFAULT_SA_SUFFIX} --role={binding.role}",
                         ],
                         iac_reference="google_project_iam_binding",
                         docs=[
@@ -257,8 +254,7 @@ class CM041SAUserManagedKeys(BaseCheck):
                             "Enforce via Org Policy: constraints/iam.disableServiceAccountKeyCreation.",
                         ],
                         gcloud_commands=[
-                            f"gcloud iam service-accounts keys delete KEY_ID "
-                            f"--iam-account={sa.email}",
+                            f"gcloud iam service-accounts keys delete KEY_ID --iam-account={sa.email}",
                         ],
                         iac_reference="google_service_account_key",
                         docs=[

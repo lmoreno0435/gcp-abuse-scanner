@@ -89,7 +89,7 @@ class TestGKECollector:
             collector.collect(inv, ["proj-1"])
 
         assert len(inv.gke_clusters) == 0
-        assert "container.googleapis.com" in inv.skipped_apis.get("proj-1", [])
+        assert "container.googleapis.com" in inv.skipped_apis.get("proj-1", [])  # lgtm[py/incomplete-url-substring-sanitization]
 
     def test_handles_api_error_gracefully(self):
         from gcp_abuse_scanner.collectors.gke import GKECollector
@@ -204,7 +204,7 @@ class TestCloudRunCollector:
             collector.collect(inv, ["proj-1"])
 
         assert len(inv.cloud_run_services) == 0
-        assert "run.googleapis.com" in inv.skipped_apis.get("proj-1", [])
+        assert "run.googleapis.com" in inv.skipped_apis.get("proj-1", [])  # lgtm[py/incomplete-url-substring-sanitization]
 
     def test_handles_error_gracefully(self):
         from gcp_abuse_scanner.collectors.cloud_run import CloudRunCollector
@@ -279,7 +279,7 @@ class TestVertexAICollector:
             collector.collect(inv, ["proj-1"])
 
         assert len(inv.vertex_ai_endpoints) == 0
-        assert "aiplatform.googleapis.com" in inv.skipped_apis.get("proj-1", [])
+        assert "aiplatform.googleapis.com" in inv.skipped_apis.get("proj-1", [])  # lgtm[py/incomplete-url-substring-sanitization]
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -421,7 +421,7 @@ class TestRecommenderCollector:
             collector.collect(inv, ["proj-1"])
 
         assert len(inv.recommender_insights) == 0
-        assert "recommender.googleapis.com" in inv.skipped_apis.get("proj-1", [])
+        assert "recommender.googleapis.com" in inv.skipped_apis.get("proj-1", [])  # lgtm[py/incomplete-url-substring-sanitization]
 
 
 # ─────────────────────────────────────────────────────────────────────────────

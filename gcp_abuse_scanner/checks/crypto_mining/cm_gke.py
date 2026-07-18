@@ -27,7 +27,7 @@ from gcp_abuse_scanner.models.inventory import ResourceInventory
 
 
 def _make_id(check_id: str, project_id: str, resource: str) -> str:
-    h = hashlib.md5(resource.encode()).hexdigest()[:8]
+    h = hashlib.md5(resource.encode(), usedforsecurity=False).hexdigest()[:8]
     return f"{check_id}-{project_id}-{h}"
 
 
@@ -98,18 +98,12 @@ class CM020GKENodePoolUnboundedAutoscaling(BaseCheck):
                                     "the maximum compute capacity that can be provisioned."
                                 ),
                                 steps=[
-                                    "Determine the maximum number of nodes legitimately needed "
-                                    "by the workloads running in this pool.",
-                                    "Update the node pool autoscaling configuration with an "
-                                    "appropriate maxNodeCount value.",
-                                    "Set up billing alerts and quota limits as an additional "
-                                    "safeguard against runaway scaling.",
+                                    "Determine the maximum number of nodes legitimately needed by the workloads running in this pool.",
+                                    "Update the node pool autoscaling configuration with an appropriate maxNodeCount value.",
+                                    "Set up billing alerts and quota limits as an additional safeguard against runaway scaling.",
                                 ],
                                 gcloud_commands=[
-                                    "gcloud container node-pools update POOL_NAME "
-                                    "--max-nodes=MAX_NODES "
-                                    "--cluster=CLUSTER_NAME "
-                                    "--zone=ZONE",
+                                    "gcloud container node-pools update POOL_NAME --max-nodes=MAX_NODES --cluster=CLUSTER_NAME --zone=ZONE",
                                 ],
                                 iac_reference=(
                                     "google_container_node_pool.autoscaling.max_node_count"
@@ -203,11 +197,7 @@ class CM021GKENAPNoResourceLimits(BaseCheck):
                             "Monitor cluster resource usage and billing to detect anomalies.",
                         ],
                         gcloud_commands=[
-                            "gcloud container clusters update CLUSTER_NAME "
-                            "--enable-autoprovisioning "
-                            "--max-cpu=MAX_CPU "
-                            "--max-memory=MAX_MEMORY_GB "
-                            "--zone=ZONE",
+                            "gcloud container clusters update CLUSTER_NAME --enable-autoprovisioning --max-cpu=MAX_CPU --max-memory=MAX_MEMORY_GB --zone=ZONE",
                         ],
                         iac_reference=(
                             "google_container_cluster.cluster_autoscaling.resource_limits"
@@ -295,24 +285,14 @@ class CM023GKEPublicControlPlaneNoAuthorizedNetworks(BaseCheck):
                             "to known IP ranges, or migrate to a private cluster."
                         ),
                         steps=[
-                            "Identify all IP ranges that legitimately need access to the "
-                            "Kubernetes API server (e.g., CI/CD systems, admin workstations).",
+                            "Identify all IP ranges that legitimately need access to the Kubernetes API server (e.g., CI/CD systems, admin workstations).",
                             "Enable Master Authorized Networks with those specific CIDR ranges.",
-                            "Alternatively, enable private nodes and use a private endpoint "
-                            "to eliminate public API server exposure entirely.",
+                            "Alternatively, enable private nodes and use a private endpoint to eliminate public API server exposure entirely.",
                             "Audit existing cluster credentials and rotate if exposure is suspected.",
                         ],
                         gcloud_commands=[
-                            "# Enable authorized networks:\n"
-                            "gcloud container clusters update CLUSTER_NAME "
-                            "--enable-master-authorized-networks "
-                            "--master-authorized-networks=CIDR1,CIDR2 "
-                            "--zone=ZONE",
-                            "# Or enable private cluster (requires recreation):\n"
-                            "gcloud container clusters create CLUSTER_NAME "
-                            "--enable-private-nodes "
-                            "--master-ipv4-cidr=172.16.0.0/28 "
-                            "--zone=ZONE",
+                            "# Enable authorized networks:\ngcloud container clusters update CLUSTER_NAME --enable-master-authorized-networks --master-authorized-networks=CIDR1,CIDR2 --zone=ZONE",
+                            "# Or enable private cluster (requires recreation):\ngcloud container clusters create CLUSTER_NAME --enable-private-nodes --master-ipv4-cidr=172.16.0.0/28 --zone=ZONE",
                         ],
                         iac_reference=(
                             "google_container_cluster.master_authorized_networks_config"
@@ -393,19 +373,13 @@ class CM024WorkloadIdentityDisabled(BaseCheck):
                         ),
                         steps=[
                             "Enable Workload Identity on the cluster.",
-                            "Annotate Kubernetes service accounts with the corresponding "
-                            "GCP service account.",
+                            "Annotate Kubernetes service accounts with the corresponding GCP service account.",
                             "Grant only the minimum required IAM roles to each GCP SA.",
                             "Remove broad IAM roles from the node service account.",
                         ],
                         gcloud_commands=[
-                            "gcloud container clusters update CLUSTER_NAME "
-                            "--workload-pool=PROJECT_ID.svc.id.goog "
-                            "--zone=ZONE",
-                            "# Annotate a Kubernetes SA:\n"
-                            "kubectl annotate serviceaccount KSA_NAME "
-                            "--namespace=NAMESPACE "
-                            "iam.gke.io/gcp-service-account=GSA_NAME@PROJECT_ID.iam.gserviceaccount.com",
+                            "gcloud container clusters update CLUSTER_NAME --workload-pool=PROJECT_ID.svc.id.goog --zone=ZONE",
+                            "# Annotate a Kubernetes SA:\nkubectl annotate serviceaccount KSA_NAME --namespace=NAMESPACE iam.gke.io/gcp-service-account=GSA_NAME@PROJECT_ID.iam.gserviceaccount.com",
                         ],
                         iac_reference=(
                             "google_container_cluster.workload_identity_config.workload_pool"
@@ -482,16 +456,12 @@ class CM025LegacyABACEnabled(BaseCheck):
                             "for access control."
                         ),
                         steps=[
-                            "Audit existing RBAC roles and bindings to ensure they cover "
-                            "all legitimate access requirements before disabling ABAC.",
+                            "Audit existing RBAC roles and bindings to ensure they cover all legitimate access requirements before disabling ABAC.",
                             "Disable Legacy ABAC on the cluster.",
-                            "Verify that workloads continue to function correctly after "
-                            "the change.",
+                            "Verify that workloads continue to function correctly after the change.",
                         ],
                         gcloud_commands=[
-                            "gcloud container clusters update CLUSTER_NAME "
-                            "--no-enable-legacy-authorization "
-                            "--zone=ZONE",
+                            "gcloud container clusters update CLUSTER_NAME --no-enable-legacy-authorization --zone=ZONE",
                         ],
                         iac_reference=("google_container_cluster.enable_legacy_abac"),
                         docs=[
@@ -576,28 +546,14 @@ class CM026NodePoolDefaultComputeSA(BaseCheck):
                             ),
                             steps=[
                                 "Create a new GCP service account dedicated to this node pool.",
-                                "Grant only the minimum IAM roles required by GKE nodes "
-                                "(e.g., roles/logging.logWriter, roles/monitoring.metricWriter, "
-                                "roles/monitoring.viewer, roles/storage.objectViewer for "
-                                "private GCR).",
+                                "Grant only the minimum IAM roles required by GKE nodes (e.g., roles/logging.logWriter, roles/monitoring.metricWriter, roles/monitoring.viewer, roles/storage.objectViewer for private GCR).",
                                 "Recreate the node pool specifying the new service account.",
-                                "Enable Workload Identity (CM-024) to further restrict "
-                                "per-pod GCP access.",
+                                "Enable Workload Identity (CM-024) to further restrict per-pod GCP access.",
                             ],
                             gcloud_commands=[
-                                "# Create a dedicated SA:\n"
-                                "gcloud iam service-accounts create gke-node-sa "
-                                "--display-name='GKE Node Pool SA' "
-                                "--project=PROJECT_ID",
-                                "# Grant minimum roles:\n"
-                                "gcloud projects add-iam-policy-binding PROJECT_ID "
-                                "--member=serviceAccount:gke-node-sa@PROJECT_ID.iam.gserviceaccount.com "
-                                "--role=roles/logging.logWriter",
-                                "# Recreate node pool with the new SA:\n"
-                                "gcloud container node-pools create POOL_NAME "
-                                "--cluster=CLUSTER_NAME "
-                                "--service-account=gke-node-sa@PROJECT_ID.iam.gserviceaccount.com "
-                                "--zone=ZONE",
+                                "# Create a dedicated SA:\ngcloud iam service-accounts create gke-node-sa --display-name='GKE Node Pool SA' --project=PROJECT_ID",
+                                "# Grant minimum roles:\ngcloud projects add-iam-policy-binding PROJECT_ID --member=serviceAccount:gke-node-sa@PROJECT_ID.iam.gserviceaccount.com --role=roles/logging.logWriter",
+                                "# Recreate node pool with the new SA:\ngcloud container node-pools create POOL_NAME --cluster=CLUSTER_NAME --service-account=gke-node-sa@PROJECT_ID.iam.gserviceaccount.com --zone=ZONE",
                             ],
                             iac_reference=(
                                 "google_container_node_pool.node_config.service_account"

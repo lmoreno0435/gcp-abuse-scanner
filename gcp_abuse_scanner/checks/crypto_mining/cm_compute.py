@@ -27,7 +27,7 @@ _ADMIN_PORTS = {"22", "3389", "5985", "5986"}
 
 
 def _make_id(check_id: str, project_id: str, resource: str) -> str:
-    h = hashlib.md5(resource.encode()).hexdigest()[:8]
+    h = hashlib.md5(resource.encode(), usedforsecurity=False).hexdigest()[:8]
     return f"{check_id}-{project_id}-{h}"
 
 
@@ -89,11 +89,8 @@ class CM001ExternalIP(BaseCheck):
                             "Enforce via Org Policy: constraints/compute.vmExternalIpAccess.",
                         ],
                         gcloud_commands=[
-                            "gcloud compute instances delete-access-config INSTANCE_NAME "
-                            "--access-config-name='External NAT' --zone=ZONE",
-                            "# Enforce org-wide:\n"
-                            "gcloud resource-manager org-policies set-policy "
-                            "--organization=ORG_ID policy.yaml",
+                            "gcloud compute instances delete-access-config INSTANCE_NAME --access-config-name='External NAT' --zone=ZONE",
+                            "# Enforce org-wide:\ngcloud resource-manager org-policies set-policy --organization=ORG_ID policy.yaml",
                         ],
                         iac_reference="google_compute_instance.network_interface.access_config",
                         docs=[
@@ -185,10 +182,8 @@ class CM004FirewallAdminPortsOpen(BaseCheck):
                             "Consider using OS Login for SSH key management.",
                         ],
                         gcloud_commands=[
-                            f"gcloud compute firewall-rules update {rule.name} "
-                            "--source-ranges=TRUSTED_IP_RANGE",
-                            "# Or delete and use IAP:\n"
-                            f"gcloud compute firewall-rules delete {rule.name}",
+                            f"gcloud compute firewall-rules update {rule.name} --source-ranges=TRUSTED_IP_RANGE",
+                            f"# Or delete and use IAP:\ngcloud compute firewall-rules delete {rule.name}",
                         ],
                         iac_reference="google_compute_firewall.source_ranges",
                         docs=[
@@ -296,8 +291,7 @@ class CM009ShieldedVMDisabled(BaseCheck):
                         ],
                         gcloud_commands=[
                             f"gcloud compute instances stop {instance.name} --zone={instance.zone}",
-                            f"gcloud compute instances update {instance.name} --zone={instance.zone} "
-                            "--shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring",
+                            f"gcloud compute instances update {instance.name} --zone={instance.zone} --shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring",
                             f"gcloud compute instances start {instance.name} --zone={instance.zone}",
                         ],
                         iac_reference="google_compute_instance.shielded_instance_config",

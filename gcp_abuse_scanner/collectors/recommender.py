@@ -15,7 +15,6 @@ logger = logging.getLogger(__name__)
 
 # IAM recommender insight type
 _IAM_RECOMMENDER_ID = "google.iam.policy.Recommender"
-_IAM_INSIGHT_TYPE = "google.iam.policy.Insight"
 
 # Locations where IAM recommender is available
 _RECOMMENDER_LOCATIONS = ["global"]
@@ -79,7 +78,7 @@ class RecommenderCollector(BaseCollector):
         location: str,
     ) -> None:
         parent = (
-            f"projects/{project_id}/locations/{location}/" f"recommenders/{_IAM_RECOMMENDER_ID}"
+            f"projects/{project_id}/locations/{location}/recommenders/{_IAM_RECOMMENDER_ID}"
         )
         try:
             request = (
