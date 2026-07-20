@@ -41,7 +41,7 @@ jobs:
       - name: Run tests
         run: pytest --cov=gcp_abuse_scanner --cov-report=xml -v
       - name: Upload coverage
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         if: matrix.python-version == '3.11'
         with:
           file: coverage.xml
